@@ -13,13 +13,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ข้อมูลอารมณ์และข้อความ
   final Map<String, String> moodMap = {
-    '😊': 'มีความสุข',
-    '😄': 'ดีใจ',
-    '😐': 'ปกติ',
+    '😃': 'มีความสุข',
+    '😌': 'สงบ',
+    '😐': 'เฉยๆ',
     '😔': 'เศร้า',
-    '😡': 'โกรธ',
     '😰': 'กังวล',
+    '😡': 'โกรธ',
   };
+
+  // -------------------- NEW: Gradients พาสเทลสำหรับการ์ด --------------------
+  final LinearGradient kPinkGrad = const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF8BBD0), Color(0xFFF48FB1)], // ชมพูพาสเทล
+  );
+  final LinearGradient kBlueGrad = const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFAED9FF), Color(0xFF7EC8F8)], // ฟ้าพาสเทล
+  );
+  final LinearGradient kPeachGrad = const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFF6D2B8), Color(0xFFF0B996)], // พีช/ส้มอ่อน
+  );
+  final LinearGradient kMintGrad = const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFBDEFD9), Color(0xFF7ED9C6)], // เขียวมินต์อ่อน
+  );
+  // -------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       _buildMoodSelection(),
                       SizedBox(height: 24),
 
-                      // Menu Grid
+                      // Menu Grid (UPDATED: ใช้ Gradients)
                       _buildMenuGrid(),
                       SizedBox(height: 24),
 
-                      // Action Button
+                      // Action Button (UPDATED: โทนเหลืองพาสเทล)
                       _buildActionButton(),
                     ],
                   ),
@@ -107,12 +130,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // User Card Widget
+  // User Card Widget พร้อมภาพพื้นหลัง
   Widget _buildUserCard() {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
+        // เพิ่มภาพพื้นหลัง
+        image: DecorationImage(
+          image: AssetImage('assets/images/card_background.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.white.withOpacity(0.3),
+            BlendMode.lighten,
+          ),
+        ),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -123,6 +155,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -146,57 +185,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: const Color.fromARGB(255, 70, 12, 141),
                   ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 9),
                 ElevatedButton(
                   onPressed: () {
                     // Navigate to mood check
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 55, 208, 172),
-                    foregroundColor: Color.fromARGB(255, 8, 126, 101),
+                    backgroundColor: const Color.fromARGB(255, 205, 254, 242),
+                    foregroundColor: Color.fromARGB(255, 5, 89, 71),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
-                  child: Text('กดเพื่อโทรออก', style: TextStyle(fontSize: 12)),
+                  child: Text('กดเพื่อโทรออก', style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
           ),
-          // Chart/Stats
+
+          // ไอคอนโทรศัพท์
           Container(
-            width: 80,
-            height: 80,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Circular Progress
-                CircularProgressIndicator(
-                  value: 0.65,
-                  strokeWidth: 6,
-                  backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF7B68EE)),
-                ),
-                // Center Text
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '1323',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF7B68EE),
-                      ),
-                    ),
-                    Text(
-                      'คะแนน',
-                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ],
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(
+              Icons.phone,
+              size: 40,
+              color: Color.fromARGB(255, 70, 12, 141),
             ),
           ),
         ],
@@ -204,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Mood Selection Widget
+  // Mood Selection Widget พร้อมภาพพื้นหลัง (คงพฤติกรรมเดิม: แตะแล้วขึ้นข้อความ)
   Widget _buildMoodSelection() {
     return Column(
       children: [
@@ -227,11 +245,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-        // Mood Icons Row
+        // Mood Icons Row พร้อมภาพพื้นหลัง
+        // Mood Icons Row พร้อมการไล่สี
         Container(
           padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF7B68EE).withOpacity(0.3),
+                Color(0xFFE8E4FF).withOpacity(0.5),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
@@ -278,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Menu Grid Widget
+  // -------------------- UPDATED: Menu Grid ใช้ Gradients --------------------
   Widget _buildMenuGrid() {
     return GridView.count(
       shrinkWrap: true,
@@ -290,25 +316,25 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _buildMenuCard(
           'บันทึกความรู้สึก\nประจำวัน',
-          Color(0xFFFFB6C1), // สีชมพู
+          kPinkGrad,
           Icons.edit_note,
           () => _navigateToPage('บันทึกความรู้สึก'),
         ),
         _buildMenuCard(
           'ผ่อนคลายจิตใจ',
-          Color(0xFF87CEEB), // สีฟ้า
-          Icons.people,
+          kBlueGrad,
+          Icons.self_improvement,
           () => _navigateToPage('ชุมชน'),
         ),
         _buildMenuCard(
           'พูดคุยกับผู้ช่วย\nAI',
-          Color(0xFFFFA07A), // สีส้ม
+          kPeachGrad,
           Icons.smart_toy,
           () => _navigateToPage('AI Chatbot'),
         ),
         _buildMenuCard(
           'ประเมิน\nสุขภาพจิต',
-          Color(0xFF98FB98), // สีเขียว
+          kMintGrad,
           Icons.psychology,
           () => _navigateToPage('ประเมินสุขภาพจิต'),
         ),
@@ -316,61 +342,95 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Menu Card Widget
+  // -------------------- UPDATED: Menu Card รองรับ Gradient + ไฮไลต์ --------------------
   Widget _buildMenuCard(
     String title,
-    Color color,
+    Gradient gradient,
     IconData icon,
     VoidCallback onTap,
   ) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.8),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: Colors.white),
-            SizedBox(height: 12),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                height: 1.2,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          SizedBox.expand(
+            // ทำให้การ์ดขยายเต็มพื้นที่ช่อง
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.6),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 40, color: Colors.white),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          // ไฮไลต์มุมซ้ายบน (ถ้ามี)
+          Positioned(
+            top: -10,
+            left: -10,
+            child: Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.35),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.55),
+                    blurRadius: 20,
+                    spreadRadius: 8,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // Action Button Widget
+  // -------------------- UPDATED: Action Button พาสเทลเหลือง --------------------
   Widget _buildActionButton() {
     return Container(
       width: double.infinity,
       height: 60,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Color(0xFFDDA0DD), // สีม่วงอ่อน
-            Color(0xFFF0E68C), // สีเหลืองอ่อน
+            Color(0xFFF9E7AE), // เหลืองนวล
+            Color(0xFFF5C77E), // เหลืองอ่อนพาสเทล
           ],
         ),
         borderRadius: BorderRadius.circular(30),
@@ -391,13 +451,20 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        child: Text(
-          'สมุดสะท้อนความคิด',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.menu_book, color: Colors.white, size: 24),
+            SizedBox(width: 8),
+            Text(
+              'สมุดสะท้อนความคิด',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -432,9 +499,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBottomNavItem(IconData icon, String label, bool isActive) {
     return GestureDetector(
       onTap: () {
-        if (!isActive) {
-          _navigateToPage(label);
-        }
+        if (!isActive) _navigateToPage(label);
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -476,8 +541,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Color(0xFF7B68EE),
       ),
     );
-
-    // ในอนาคตจะเพิ่ม navigation จริงๆ
     // Navigator.pushNamed(context, '/page-route');
   }
 }
