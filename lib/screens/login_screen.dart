@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'auth_service.dart'; // import ไฟล์ auth_service.dart
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -11,6 +12,57 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false; // สถานะการโหลด
+
+  // ฟังก์ชันสำหรับ Login
+  Future<void> _handleLogin() async {
+    // ✅ เช็คว่ากรอกข้อมูลครบหรือไม่ก่อน (ก่อนเรียก API)
+    if (_emailController.text.trim().isEmpty || 
+        _passwordController.text.isEmpty) {
+      _showSnackBar('กรุณากรอกอีเมลและรหัสผ่าน', Colors.red);
+      return; // หยุดทำงานทันที ไม่เรียก API
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // เรียก API Login (เมื่อข้อมูลครบแล้วเท่านั้น)
+    final result = await AuthService.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success']) {
+      // Login สำเร็จ
+      _showSnackBar(result['message'], Colors.green);
+
+      // เก็บข้อมูล user ถ้าต้องการ (เช่น ใช้ SharedPreferences)
+      print('User data: ${result['user']}');
+
+      // ไปหน้าหลัก
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    } else {
+      // Login ไม่สำเร็จ
+      _showSnackBar(result['message'], Colors.red);
+    }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    enabled: !_isLoading, // ปิดการใช้งานเมื่อกำลังโหลด
                     decoration: InputDecoration(
                       hintText: 'Email',
                       hintStyle: TextStyle(color: Colors.grey[500]),
@@ -161,6 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    enabled: !_isLoading,
                     decoration: InputDecoration(
                       hintText: 'Password',
                       hintStyle: TextStyle(color: Colors.grey[500]),
@@ -224,34 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      // ตรวจสอบข้อมูลการเข้าสู่ระบบ
-                      if (_emailController.text.isNotEmpty &&
-                          _passwordController.text.isNotEmpty) {
-                        // จำลองการเข้าสู่ระบบสำเร็จ
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('เข้าสู่ระบบสำเร็จ!'),
-                            backgroundColor: Colors.green,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-
-                        // ไปหน้าหลักหลังจาก login สำเร็จ
-                        Future.delayed(Duration(seconds: 1), () {
-                          Navigator.pushReplacementNamed(context, '/home');
-                        });
-                      } else {
-                        // แสดงข้อความเตือน
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('กรุณากรอกอีเมลและรหัสผ่าน'),
-                            backgroundColor: Colors.red,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
@@ -259,14 +286,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: Text(
-                      'Log in',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : Text(
+                            'Log in',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 30),
