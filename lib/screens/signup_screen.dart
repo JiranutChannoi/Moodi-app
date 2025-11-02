@@ -1,4 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class User {
+  final String name;
+  final String email;
+  final String password;
+
+  User({required this.name, required this.email, required this.password});
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'email': email, 'password': password};
+  }
+}
 
 class SignupScreen extends StatefulWidget {
   @override
@@ -12,6 +26,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false; // เพิ่มตัวแปรสำหรับแสดง loading
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +58,6 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 120,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
-                          // Fallback ถ้าไม่มีรูป logo
                           return Container(
                             width: 120,
                             height: 120,
@@ -75,7 +89,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // ชื่อแอป
                   Text(
                     'Moodi',
                     style: TextStyle(
@@ -85,7 +98,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  // ข้อความสมัครสมาชิก
                   Text(
                     'Sign up to get started',
                     style: TextStyle(
@@ -96,7 +108,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   SizedBox(height: 40),
 
-                  // ช่องกรอกชื่อ
                   _buildInputField(
                     controller: _fullNameController,
                     hintText: 'Full Name',
@@ -104,7 +115,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   SizedBox(height: 16),
 
-                  // ช่องกรอกอีเมล
                   _buildInputField(
                     controller: _emailController,
                     hintText: 'Email address',
@@ -113,7 +123,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   SizedBox(height: 16),
 
-                  // ช่องกรอกรหัสผ่าน
                   _buildInputField(
                     controller: _passwordController,
                     hintText: 'Password',
@@ -128,7 +137,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   SizedBox(height: 16),
 
-                  // ช่องยืนยันรหัสผ่าน
                   _buildInputField(
                     controller: _confirmPasswordController,
                     hintText: 'Confirm Password',
@@ -150,8 +158,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [
-                          Color.fromARGB(255, 168, 188, 232), // สีเริ่มต้น
-                          Color(0xFF9B7EDE), // สีกลาง
+                          Color.fromARGB(255, 168, 188, 232),
+                          Color(0xFF9B7EDE),
                           Color.fromARGB(255, 168, 188, 232),
                         ],
                         begin: Alignment.centerLeft,
@@ -167,28 +175,29 @@ class _SignupScreenState extends State<SignupScreen> {
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: _handleSignup, // ฟังก์ชันสมัครสมาชิก
+                      onPressed: _isLoading ? null : _handleSignup,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent, // โปร่งใส
-                        shadowColor: Colors.transparent, // ไม่ให้เงามาซ้อน
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text(
-                        'Sign up',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Sign up',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
 
                   SizedBox(height: 24),
 
-                  // ข้อตกลงและเงื่อนไข
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
@@ -199,7 +208,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   SizedBox(height: 10),
 
-                  // มีบัญชีแล้ว
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -224,7 +232,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   SizedBox(height: 10),
 
-                  // กลับไปหน้าแรก
                   TextButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/welcome');
@@ -244,7 +251,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // สร้าง Input Field แบบ Reusable
   Widget _buildInputField({
     required TextEditingController controller,
     required String hintText,
@@ -300,50 +306,94 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // จัดการการสมัครสมาชิก
-  void _handleSignup() {
+  // ✅ แก้ไขฟังก์ชันสมัครสมาชิก
+  void _handleSignup() async {
     // ตรวจสอบข้อมูล
-    if (_fullNameController.text.isEmpty) {
+    if (_fullNameController.text.trim().isEmpty) {
       _showSnackBar('กรุณากรอกชื่อ-นามสกุล', Colors.red);
       return;
     }
-
-    if (_emailController.text.isEmpty) {
+    if (_emailController.text.trim().isEmpty) {
       _showSnackBar('กรุณากรอกอีเมล', Colors.red);
       return;
     }
-
+    if (!_isValidEmail(_emailController.text.trim())) {
+      _showSnackBar('รูปแบบอีเมลไม่ถูกต้อง', Colors.red);
+      return;
+    }
     if (_passwordController.text.isEmpty) {
       _showSnackBar('กรุณากรอกรหัสผ่าน', Colors.red);
       return;
     }
-
+    if (_passwordController.text.length < 6) {
+      _showSnackBar('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', Colors.orange);
+      return;
+    }
     if (_passwordController.text != _confirmPasswordController.text) {
       _showSnackBar('รหัสผ่านไม่ตรงกัน', Colors.red);
       return;
     }
 
-    if (_passwordController.text.length < 6) {
-      _showSnackBar('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', Colors.orange);
-      return;
-    }
-
-    // สำเร็จ
-    _showSnackBar('สมัครสมาชิกสำเร็จ!', Colors.green);
-
-    // นำทางไปหน้า Login หลังจาก 2 วินาที
-    Future.delayed(Duration(seconds: 2), () {
-      Navigator.pushNamed(context, '/login');
+    setState(() {
+      _isLoading = true;
     });
+
+    try {
+      // ✅ แก้ไข URL และ body
+      final response = await http.post(
+        //Uri.parse('http://10.0.2.2:3000/users'), // สำหรับ Android Emulator
+        Uri.parse('http://localhost:3000/users'), // สำหรับ iOS Simulator
+        // Uri.parse('http://YOUR_COMPUTER_IP:3000/users'), // สำหรับ Real Device
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': _fullNameController.text.trim(),
+          'email': _emailController.text.trim().toLowerCase(),
+          'password': _passwordController.text, // ✅ เปลี่ยนจาก passwords เป็น password
+        }),
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        _showSnackBar('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ ${responseData['name']}', Colors.green);
+        
+        // รอ 2 วินาที แล้วไปหน้า login
+        Future.delayed(Duration(seconds: 2), () {
+          Navigator.pushReplacementNamed(context, '/login');
+        });
+      } else {
+        final errorData = jsonDecode(response.body);
+        _showSnackBar(
+          errorData['error'] ?? 'สมัครสมาชิกไม่สำเร็จ',
+          Colors.red,
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error: $e');
+      _showSnackBar('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์: $e', Colors.red);
+    }
   }
 
-  // แสดง SnackBar
+  // ตรวจสอบรูปแบบอีเมล
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   void _showSnackBar(String message, Color backgroundColor) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: backgroundColor,
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
       ),
     );
