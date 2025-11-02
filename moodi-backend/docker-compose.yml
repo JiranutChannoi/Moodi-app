@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: moodi_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: moodi_db
+    ports:
+      - "5432:5432"                 # เปิดให้ใช้งานจาก host ได้ (VS Code/pgAdmin นอก container)
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d moodi_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: moodi_api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # *** จุดสำคัญ: ใช้ host = db (ชื่อ service) ไม่ใช่ localhost ***
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/moodi_db?schema=public"
+      JWT_SECRET: "changeme-very-long-secret"
+      PORT: "3000"
+    ports:
+      - "3000:3000"                 # ให้ host เรียก http://localhost:3000 ได้
+    # โหมด dev อยาก hot-reload ค่อยเปิด volumes (ดูท้ายบท)
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: moodi_pgadmin
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"                   # เปิด pgAdmin ที่ http://localhost:8080
+
+volumes:
+  dbdata:
