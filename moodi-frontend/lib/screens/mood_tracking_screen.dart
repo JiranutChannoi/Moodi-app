@@ -800,4 +800,8 @@ class _MoodTrackingScreenState extends State<MoodTrackingScreen> {
     noteController.dispose();
     super.dispose();
   }
+<<<<<<< HEAD:moodi-frontend/lib/screens/mood_tracking_screen.dart
 }
+=======
+}
+>>>>>>> 8648a985e3350dbe357befbd0b0391a784f6556c:lib/screens/mood_tracking_screen.dart
