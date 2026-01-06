@@ -1,3 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Mood {
+  VERY_NEGATIVE
+  NEGATIVE
+  NEUTRAL
+  POSITIVE
+  VERY_POSITIVE
+}
+
+model User {
+  id           Int      @id @default(autoincrement()) @map("user_id")
+  email        String   @unique
+  passwordHash String   @map("password")
+  name         String
+  createdAt    DateTime @default(now())
+
+  @@map("users")
+}
+
 // model MoodEntry {
 //   id        Int      @id @default(autoincrement())
 //   userId    Int
