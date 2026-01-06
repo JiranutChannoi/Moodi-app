@@ -1,36 +1,4 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum Mood {
-  VERY_NEGATIVE
-  NEGATIVE
-  NEUTRAL
-  POSITIVE
-  VERY_POSITIVE
-}
-
-// ⬇️ ปรับแม็พกับตารางและคอลัมน์ใน DB ที่มีอยู่แล้ว //
-model User {
-  id           Int      @id @default(autoincrement()) @map("user_id")
-  email        String   @unique
-  passwordHash String   @map("password")
-  name         String
-  createdAt    DateTime @default(now()) // ถ้าใน DB ยังไม่มีคอลัมน์นี้ ให้ลบทิ้งชั่วคราว
-
-  moods        MoodEntry[] @ignore
-  reflections  Reflection[] @ignore
-
-  @@map("users")           // ตารางจริงชื่อ users (พหูพจน์)
-}
-
-// ตารางพวกนี้ถ้าคุณยังไม่ได้สร้างจริงใน DB ให้คอมเมนต์/ใช้ @ignore ไปก่อน
-   แล้วค่อยกลับมาเปิดใช้งานภายหลังเมื่อพร้อมจะสร้างด้วย migration //
+/*
 model MoodEntry {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -56,3 +24,4 @@ model AsmrTrack {
   durationSeconds Int?
   createdAt       DateTime @default(now())
 }
+*/
