@@ -1,27 +1,25 @@
-/*
-model MoodEntry {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  mood      Mood
-  note      String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-}
+// model MoodEntry {
+//   id        Int      @id @default(autoincrement())
+//   userId    Int
+//   mood      Mood
+//   note      String?
+//   createdAt DateTime @default(now())
+//   user      User     @relation(fields: [userId], references: [id])
+// }
 
-model Reflection {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  content   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-}
+// model Reflection {
+//   id        Int      @id @default(autoincrement())
+//   userId    Int
+//   content   String
+//   createdAt DateTime @default(now())
+//   user      User     @relation(fields: [userId], references: [id])
+// }
 
-model AsmrTrack {
-  id              Int      @id @default(autoincrement())
-  title           String   @unique
-  category        String
-  url             String
-  durationSeconds Int?
-  createdAt       DateTime @default(now())
-}
-*/
+// model AsmrTrack {
+//   id              Int      @id @default(autoincrement())
+//   title           String   @unique
+//   category        String
+//   url             String
+//   durationSeconds Int?
+//   createdAt       DateTime @default(now())
+// }
