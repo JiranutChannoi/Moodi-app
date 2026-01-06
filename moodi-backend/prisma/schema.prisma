@@ -15,7 +15,7 @@ enum Mood {
   VERY_POSITIVE
 }
 
-/* ⬇️ ปรับแม็พกับตารางและคอลัมน์ใน DB ที่มีอยู่แล้ว */
+// ⬇️ ปรับแม็พกับตารางและคอลัมน์ใน DB ที่มีอยู่แล้ว //
 model User {
   id           Int      @id @default(autoincrement()) @map("user_id")
   email        String   @unique
@@ -29,8 +29,8 @@ model User {
   @@map("users")           // ตารางจริงชื่อ users (พหูพจน์)
 }
 
-/* ตารางพวกนี้ถ้าคุณยังไม่ได้สร้างจริงใน DB ให้คอมเมนต์/ใช้ @ignore ไปก่อน
-   แล้วค่อยกลับมาเปิดใช้งานภายหลังเมื่อพร้อมจะสร้างด้วย migration */
+// ตารางพวกนี้ถ้าคุณยังไม่ได้สร้างจริงใน DB ให้คอมเมนต์/ใช้ @ignore ไปก่อน
+   แล้วค่อยกลับมาเปิดใช้งานภายหลังเมื่อพร้อมจะสร้างด้วย migration //
 model MoodEntry {
   id        Int      @id @default(autoincrement())
   userId    Int
