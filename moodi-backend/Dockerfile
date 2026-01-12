@@ -2,10 +2,12 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY moodi-backend/package*.json ./
+# copy package.json และ package-lock.json
+COPY package*.json ./
 RUN npm install
 
-COPY moodi-backend ./
+# copy source code ทั้งหมด
+COPY . .
 
 EXPOSE 3000
 
