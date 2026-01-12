@@ -7,46 +7,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Mood {
-  VERY_NEGATIVE
-  NEGATIVE
-  NEUTRAL
-  POSITIVE
-  VERY_POSITIVE
-}
-
 model User {
-  id           Int      @id @default(autoincrement()) @map("user_id")
-  email        String   @unique
-  passwordHash String   @map("password")
-  name         String
-  createdAt    DateTime @default(now())
+  id                    Int                     @id(map: "user_pkey") @default(autoincrement()) @map("user_id")
+  name                  String                  @db.VarChar(100)
+  email                 String                  @unique(map: "user_email_key") @db.VarChar(100)
+  passwordHash          String                  @map("password") @db.VarChar(255)
+  password_reset_tokens password_reset_tokens[]
 
   @@map("users")
 }
 
-// model MoodEntry {
-//   id        Int      @id @default(autoincrement())
-//   userId    Int
-//   mood      Mood
-//   note      String?
-//   createdAt DateTime @default(now())
-//   user      User     @relation(fields: [userId], references: [id])
-// }
+model chatai {
+  chat_id   Int       @id @default(autoincrement())
+  user_id   Int?
+  message   String?
+  response  String?
+  timestamp DateTime? @default(now()) @db.Timestamp(6)
+}
 
-// model Reflection {
-//   id        Int      @id @default(autoincrement())
-//   userId    Int
-//   content   String
-//   createdAt DateTime @default(now())
-//   user      User     @relation(fields: [userId], references: [id])
-// }
+model diaryentries {
+  entry_id Int     @id @default(autoincrement())
+  user_id  Int?
+  mood     String? @db.VarChar(50)
+  event    String?
+  solution String?
+  improve  String?
+}
 
-// model AsmrTrack {
-//   id              Int      @id @default(autoincrement())
-//   title           String   @unique
-//   category        String
-//   url             String
-//   durationSeconds Int?
-//   createdAt       DateTime @default(now())
-// }
+model keywordreplies {
+  keyword_id Int     @id @default(autoincrement())
+  keyword    String? @unique @db.VarChar(50)
+  response   String?
+}
+
+model mood {
+  mood_id   Int       @id @default(autoincrement())
+  user_id   Int?
+  mood      String?   @db.VarChar(50)
+  note      String?
+  timestamp DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model password_reset_tokens {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  token_hash String
+  expires_at DateTime  @db.Timestamptz(6)
+  used_at    DateTime? @db.Timestamptz(6)
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  users      User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model quizresults {
+  quiz_id     Int       @id @default(autoincrement())
+  user_id     Int?
+  total_score Int?
+  level       String?   @db.VarChar(50)
+  timestamp   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model relaxsound {
+  sound_id  Int     @id @default(autoincrement())
+  title     String? @db.VarChar(100)
+  audio_url String? @db.VarChar(255)
+}
