@@ -2,10 +2,10 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY moodi-backend/package*.json ./
 RUN npm install
 
-COPY . .
+COPY moodi-backend ./
 
 EXPOSE 3000
 
