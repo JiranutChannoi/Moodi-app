@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'mood_tracking_screen.dart'; // เพิ่ม import หน้าบันทึกอารมณ์
+import 'relaxation_screen.dart';
+import 'account_screen.dart';
+import 'ai_chat_screen.dart';
+import 'mental_health_assessment_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -479,24 +483,28 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-        _buildMenuCard(
-          'ผ่อนคลายจิตใจ',
-          kBlueGrad,
-          Icons.self_improvement,
-          () => _navigateToPage('ชุมชน'),
-        ),
-        _buildMenuCard(
-          'พูดคุยกับผู้ช่วย\nAI',
-          kPeachGrad,
-          Icons.smart_toy,
-          () => _navigateToPage('AI Chatbot'),
-        ),
-        _buildMenuCard(
-          'ประเมิน\nสุขภาพจิต',
-          kMintGrad,
-          Icons.psychology,
-          () => _navigateToPage('ประเมินสุขภาพจิต'),
-        ),
+        _buildMenuCard('ผ่อนคลายจิตใจ', kBlueGrad, Icons.self_improvement, () {
+          // ✅ แก้ไขตรงนี้ - นำทางไปยังหน้าผ่อนคลาย
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const RelaxationScreen()),
+          );
+        }),
+        _buildMenuCard('พูดคุยกับผู้ช่วย\nAI', kPeachGrad, Icons.smart_toy, () {
+          // ✅ แก้ไขตรงนี้ - นำทางไปยังหน้า AI Chat
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AIChatScreen()),
+          );
+        }),
+        _buildMenuCard('ประเมิน\nสุขภาพจิต', kMintGrad, Icons.psychology, () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MentalHealthAssessmentScreen(),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -601,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Action Button
+  // แก้ไขปุ่ม "สมุดสะท้อนความคิด"
   Widget _buildActionButton() {
     return Container(
       width: double.infinity,
@@ -610,10 +618,7 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: const LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
-            Color(0xFF9575CD), // เหลืองสดใส
-            Color(0xFFD1C4E9), // เหลืองทอง
-          ],
+          colors: [Color(0xFF9575CD), Color(0xFFD1C4E9)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -625,7 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: () => _navigateToPage('สมุดสะท้อนความคิด'),
+        onPressed: () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -676,7 +681,36 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildBottomNavItem(Icons.home, 'หน้าหลัก', true),
           _buildBottomNavItem(Icons.assessment, 'ภาพรวม', false),
-          _buildBottomNavItem(Icons.person, 'บัญชี', false),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AccountScreen()),
+              );
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.person, color: Color(0xFF7B68EE), size: 36),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'บัญชี',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF7B68EE),
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -686,7 +720,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBottomNavItem(IconData icon, String label, bool isActive) {
     return GestureDetector(
       onTap: () {
-        if (!isActive) _navigateToPage(label);
+        if (!isActive) {
+          if (label == 'บัญชี') {
+            // ไปยังหน้าบัญชีผู้ใช้
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AccountScreen()),
+            );
+          } else {
+            _navigateToPage(label);
+          }
+        }
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

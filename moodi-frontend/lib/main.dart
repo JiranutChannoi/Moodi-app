@@ -3,7 +3,12 @@ import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/forgot_password_screen.dart';
-import 'screens/home_screen.dart'; // เพิ่มหน้าหลัก
+import 'screens/home_screen.dart';
+import 'screens/account_screen.dart';
+import 'screens/mood_tracking_screen.dart';
+import 'screens/relaxation_screen.dart'; // ✅ เพิ่มบรรทัดนี้
+import 'screens/ai_chat_screen.dart'; // เพิ่มบรรทัดนี้
+import 'screens/mental_health_assessment_screen.dart';
 
 void main() {
   runApp(const MoodiApp());
@@ -19,7 +24,6 @@ class MoodiApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
-        // เพิ่มธีมสำหรับ SnackBar
         snackBarTheme: SnackBarThemeData(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -27,16 +31,21 @@ class MoodiApp extends StatelessWidget {
           behavior: SnackBarBehavior.floating,
         ),
       ),
-      // เรียกหน้า Welcome โดยตรง
       home: WelcomeScreen(),
       routes: {
         '/welcome': (context) => WelcomeScreen(),
         '/login': (context) => LoginScreen(),
         '/signup': (context) => SignupScreen(),
         '/forgot-password': (context) => const ForgotPasswordScreen(),
-        '/home': (context) => const HomeScreen(), // เพิ่ม route หน้าหลัก
+        '/home': (context) => const HomeScreen(),
+        '/account': (context) => const AccountScreen(),
+        '/mood': (context) => const MoodTrackingScreen(),
+        '/relaxation': (context) =>
+            const RelaxationScreen(), // ✅ เพิ่มบรรทัดนี้
+        '/ai-chat': (context) => const AIChatScreen(),
+        '/mental-health': (context) => const MentalHealthAssessmentScreen(),
       },
-      debugShowCheckedModeBanner: false, // ซ่อน debug banner
+      debugShowCheckedModeBanner: false,
     );
   }
 }
