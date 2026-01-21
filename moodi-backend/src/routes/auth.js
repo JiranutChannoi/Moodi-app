@@ -6,7 +6,52 @@ const jwt = require('jsonwebtoken');
 
 const prisma = new PrismaClient();
 
-// ✅ Login API
+// ---------- REGISTER ----------
+router.post('/register', async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบ' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'รหัสผ่านอย่างน้อย 6 ตัว' });
+  }
+
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existing) {
+      return res.status(409).json({ error: 'อีเมลนี้ถูกใช้แล้ว' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash: hash,
+      },
+    });
+
+    res.status(201).json({
+      message: 'สมัครสมาชิกสำเร็จ',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ---------- LOGIN ----------
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -15,29 +60,26 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // หา user ตาม email
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'อีเมลนี้ไม่มีในระบบ' });
+      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
-    // ตรวจสอบ password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
 
-    // สร้าง JWT token
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    return res.json({
+    res.json({
       message: 'เข้าสู่ระบบสำเร็จ',
       token,
       user: {
@@ -46,9 +88,9 @@ router.post('/login', async (req, res) => {
         email: user.email,
       },
     });
-  } catch (error) {
-    console.error('Login Error:', error);
-    return res.status(500).json({ error: 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
