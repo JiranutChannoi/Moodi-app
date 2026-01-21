@@ -5,7 +5,9 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 /* ================= REGISTER ================= */
@@ -52,6 +54,10 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ error: 'กรุณากรอก email และ password' });
+    }
+
     const q = await pool.query(
       'SELECT * FROM users WHERE email=$1',
       [email.toLowerCase()]
@@ -81,5 +87,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 module.exports = router;
