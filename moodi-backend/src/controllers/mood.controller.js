@@ -1,21 +1,30 @@
-import prisma from '../prisma.js';
+const prisma = require('../prisma');
 
-export const createMood = async (req, res) => {
-  const { user_id, mood, note } = req.body;
+exports.createMood = async (req, res, next) => {
+  try {
+    const { user_id, mood, note } = req.body;
 
-  const result = await prisma.mood.create({
-    data: { user_id, mood, note }
-  });
+    const result = await prisma.mood.create({
+      data: { user_id, mood, note },
+    });
 
-  res.json(result);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
 };
 
-export const getMoodByUser = async (req, res) => {
-  const user_id = Number(req.params.user_id);
+exports.getMoodByUser = async (req, res, next) => {
+  try {
+    const user_id = Number(req.params.user_id);
 
-  const data = await prisma.mood.findMany({
-    where: { user_id }
-  });
+    const data = await prisma.mood.findMany({
+      where: { user_id },
+      orderBy: { timestamp: 'desc' },
+    });
 
-  res.json(data);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
 };

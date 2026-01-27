@@ -17,13 +17,7 @@ app.use(express.json());
 
 // log request (debug)
 app.use((req, _res, next) => {
-  console.log(
-    '➡',
-    req.method,
-    req.url,
-    '| body:',
-    req.body
-  );
+  console.log('➡', req.method, req.url, '| body:', req.body);
   next();
 });
 
@@ -40,12 +34,9 @@ app.use('/quiz', quizRoutes);
 app.use('/chat', chatRoutes);
 app.use('/relax', relaxRoutes);
 
-// ------------------ 404 Handler ------------------
+// ------------------ 404 ------------------
 app.use((req, res) => {
-  res.status(404).json({
-    error: 'Route not found',
-    path: req.originalUrl,
-  });
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // ------------------ Error Handler ------------------
@@ -56,7 +47,6 @@ app.use((err, _req, res, _next) => {
 
 // ------------------ Start Server ------------------
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Moodi API running on port ${PORT}`);
 });

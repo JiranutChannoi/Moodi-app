@@ -1,9 +1,12 @@
-import express from 'express';
-import { createMood, getMoodByUser } from '../controllers/mood.controller.js';
-
+const express = require('express');
 const router = express.Router();
+
+const {
+  createMood,
+  getMoodByUser,
+} = require('../controllers/mood.controller');
 
 router.post('/', createMood);
 router.get('/:user_id', getMoodByUser);
 
-export default router;
+module.exports = router;
