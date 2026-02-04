@@ -1,55 +1,93 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { Pool } = require('pg');
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production'
+    ? { rejectUnauthorized: false }
+    : false,
+});
 
-// ✅ Login API
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบ' });
-  }
-
+/* ================= REGISTER ================= */
+router.post('/register', async (req, res) => {
   try {
-    // หา user ตาม email
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const { name, email, password } = req.body;
 
-    if (!user) {
-      return res.status(401).json({ error: 'อีเมลนี้ไม่มีในระบบ' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'กรุณากรอกข้อมูลให้ครบ' });
     }
 
-    // ตรวจสอบ password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'รหัสผ่านอย่างน้อย 6 ตัว' });
     }
 
-    // สร้าง JWT token
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+    const dup = await pool.query(
+      'SELECT 1 FROM users WHERE email=$1',
+      [email.toLowerCase()]
     );
 
-    return res.json({
+    if (dup.rows.length > 0) {
+      return res.status(409).json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      'INSERT INTO users (name, email, password) VALUES ($1,$2,$3) RETURNING user_id, name, email',
+      [name, email.toLowerCase(), hash]
+    );
+
+    res.status(201).json({
+      message: 'สมัครสมาชิกสำเร็จ',
+      user: result.rows[0],
+    });
+  } catch (e) {
+    console.error('REGISTER ERROR:', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/* ================= LOGIN ================= */
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'กรุณากรอก email และ password' });
+    }
+
+    const q = await pool.query(
+      'SELECT * FROM users WHERE email=$1',
+      [email.toLowerCase()]
+    );
+
+    if (q.rows.length === 0) {
+      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    }
+
+    const user = q.rows[0];
+    const ok = await bcrypt.compare(password, user.password);
+
+    if (!ok) {
+      return res.status(401).json({ error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+    }
+
+    res.json({
       message: 'เข้าสู่ระบบสำเร็จ',
-      token,
       user: {
-        id: user.id,
+        user_id: user.user_id,
         name: user.name,
         email: user.email,
       },
     });
-  } catch (error) {
-    console.error('Login Error:', error);
-    return res.status(500).json({ error: 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์' });
+  } catch (e) {
+    console.error('LOGIN ERROR:', e);
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 module.exports = router;
