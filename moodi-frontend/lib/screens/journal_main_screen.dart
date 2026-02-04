@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
 
 // ============================================================================
-// JOURNAL MAIN SCREEN - หน้าหลักของสมุดสะท้อนความคิด (ปรับปรุงใหม่)
+// JOURNAL MAIN SCREEN - หน้าหลักของสมุดสะท้อนความคิด
 // ============================================================================
 
 class JournalMainScreen extends StatefulWidget {
@@ -51,7 +53,7 @@ class _JournalMainScreenState extends State<JournalMainScreen>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
@@ -75,7 +77,7 @@ class _JournalMainScreenState extends State<JournalMainScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -88,34 +90,34 @@ class _JournalMainScreenState extends State<JournalMainScreen>
               _buildHeader(context),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildIllustration(),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         _buildTitle(),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _buildMotivationalText(),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         _buildSubtitle('เหตุการณ์ที่เกิดขึ้น'),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _buildIssuesGrid(),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         _buildSelectedIssue(),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         _buildSubtitle('ความรู้สึกที่เกิดขึ้น'),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _buildFeelingsGrid(),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         _buildThoughtsSection(),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         _buildActionsSection(),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         _buildSaveButton(),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -130,15 +132,13 @@ class _JournalMainScreenState extends State<JournalMainScreen>
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () {
-                Navigator.pop(context);
-              },
+              onTap: () => Navigator.pop(context),
               borderRadius: BorderRadius.circular(16),
               child: Container(
                 width: 48,
@@ -148,13 +148,13 @@ class _JournalMainScreenState extends State<JournalMainScreen>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF9C7AB8).withOpacity(0.2),
+                      color: const Color(0xFF9C7AB8).withOpacity(0.2),
                       blurRadius: 16,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.arrow_back_ios_new,
                   color: Color(0xFF7B5A96),
                   size: 20,
@@ -162,7 +162,7 @@ class _JournalMainScreenState extends State<JournalMainScreen>
               ),
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -170,27 +170,27 @@ class _JournalMainScreenState extends State<JournalMainScreen>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => JournalHistoryScreen(),
+                    builder: (context) => const JournalHistoryScreen(),
                   ),
                 );
               },
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [Color(0xFF81C784), Color(0xFF66BB6A)],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0xFF81C784).withOpacity(0.35),
+                      color: const Color(0xFF81C784).withOpacity(0.35),
                       blurRadius: 12,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.history_rounded, color: Colors.white, size: 20),
@@ -223,961 +223,7 @@ class _JournalMainScreenState extends State<JournalMainScreen>
             offset: Offset(0, _floatAnimation.value),
             child: Transform.scale(
               scale: _scaleAnimation.value,
-              child: Container(
-                width: 160,
-                height: 160,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // เงาพื้นหลัง - ปรับให้อยู่ต่ำกว่าและมีขนาดใหญ่ขึ้น
-                    Positioned(
-                      bottom: 5,
-                      child: Container(
-                        width: 120,
-                        height: 25,
-                        decoration: BoxDecoration(
-                          color: Color(0xFF9C7AB8).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(60),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFF9C7AB8).withOpacity(0.2),
-                              blurRadius: 25,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // กระดาษด้านหลัง (เหลือง) - ปรับขนาดและตำแหน่ง
-                    Positioned(
-                      right: 25,
-                      top: 35,
-                      child: Transform.rotate(
-                        angle: 0.12,
-                        child: Container(
-                          width: 85,
-                          height: 95,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFFFFE5B4), Color(0xFFFFF4D6)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0xFFFFD93D).withOpacity(0.35),
-                                blurRadius: 18,
-                                offset: Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              // เส้นบนกระดาษเหลือง
-                              Positioned(
-                                top: 18,
-                                left: 12,
-                                right: 12,
-                                child: Container(
-                                  height: 2.5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 28,
-                                left: 12,
-                                right: 20,
-                                child: Container(
-                                  height: 2.5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 38,
-                                left: 12,
-                                right: 15,
-                                child: Container(
-                                  height: 2.5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.4),
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // กระดาษหลัก (ชมพู) - ปรับขนาดให้สมดุล
-                    Positioned(
-                      top: 30,
-                      child: Container(
-                        width: 90,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [Color(0xFFFF9AA2), Color(0xFFFFB3BA)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFF9AA2).withOpacity(0.45),
-                              blurRadius: 22,
-                              offset: Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            // เส้นบนกระดาษชมพู
-                            Positioned(
-                              top: 18,
-                              left: 14,
-                              right: 14,
-                              child: Container(
-                                height: 2.5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(1),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 28,
-                              left: 14,
-                              right: 22,
-                              child: Container(
-                                height: 2.5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(1),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 38,
-                              left: 14,
-                              right: 18,
-                              child: Container(
-                                height: 2.5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(1),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // หลอดไฟ - ปรับขนาดให้สมดุลกับกระดาษ
-                    Positioned(
-                      top: 0,
-                      child: Container(
-                        padding: EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFFD93D).withOpacity(0.6),
-                              blurRadius: 25,
-                              spreadRadius: 6,
-                              offset: Offset(0, 6),
-                            ),
-                            BoxShadow(
-                              color: Colors.white,
-                              blurRadius: 12,
-                              spreadRadius: -4,
-                            ),
-                          ],
-                        ),
-                        child: Text('💡', style: TextStyle(fontSize: 40)),
-                      ),
-                    ),
-                    // ประกายแสง - ปรับตำแหน่งให้สมดุล
-                    Positioned(
-                      top: 15,
-                      right: 35,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFEB3B).withOpacity(0.9),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFFEB3B).withOpacity(0.7),
-                              blurRadius: 12,
-                              spreadRadius: 3,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      left: 40,
-                      child: Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFEB3B).withOpacity(0.7),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFFEB3B).withOpacity(0.5),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 22,
-                      left: 30,
-                      child: Container(
-                        width: 5,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFEB3B).withOpacity(0.6),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFFFFEB3B).withOpacity(0.4),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTitle() {
-    return Center(
-      child: Text(
-        'สมุดสะท้อนความคิด',
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF6B4E7E),
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMotivationalText() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFFF9E6), Color(0xFFFFFDF5)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Color(0xFFFFE082).withOpacity(0.4), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFFFFD54F).withOpacity(0.2),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFFD54F), Color(0xFFFFCA28)],
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0xFFFFD54F).withOpacity(0.35),
-                  blurRadius: 10,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(Icons.auto_awesome, color: Colors.white, size: 20),
-          ),
-          SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'บันทึกความคิดของคุณ',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF6B4E7E),
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'เขียนสะท้อนวันนี้ เพื่อเข้าใจตัวเองมากขึ้น',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF8D6E63),
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubtitle(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 15,
-        color: Color(0xFF6B4E7E),
-        fontWeight: FontWeight.bold,
-        letterSpacing: 0.3,
-      ),
-    );
-  }
-
-  Widget _buildIssuesGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 2.5,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: issues.length,
-      itemBuilder: (context, index) {
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              setState(() {
-                for (var issue in issues) {
-                  issue['selected'] = false;
-                }
-                issues[index]['selected'] = true;
-                selectedIssue = issues[index]['label'];
-              });
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: _buildIssueChip(
-              issues[index]['label'],
-              issues[index]['selected'],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildIssueChip(String label, bool selected) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        gradient: selected
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFB8D4F1), Color(0xFFCCE2F7)],
-              )
-            : null,
-        color: selected ? null : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: selected
-              ? Color(0xFFB8D4F1).withOpacity(0.6)
-              : Color(0xFFE0E0E0),
-          width: 2,
-        ),
-        boxShadow: [
-          if (selected)
-            BoxShadow(
-              color: Color(0xFFB8D4F1).withOpacity(0.35),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: selected ? Color(0xFF4A6FA5) : Color(0xFF7B5A96),
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedIssue() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFE8F4F8), Color(0xFFF5FAFC)],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Color(0xFFB8D4F1).withOpacity(0.6), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFFB8D4F1).withOpacity(0.25),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF90B8E8), Color(0xFFADCBEE)],
-              ),
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0xFF90B8E8).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(Icons.event_note, color: Colors.white, size: 22),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'เหตุการณ์ : $selectedIssue',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF4A6FA5),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeelingsGrid() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: feelings.asMap().entries.map((entry) {
-        int index = entry.key;
-        var feeling = entry.value;
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              setState(() {
-                for (var f in feelings) {
-                  f['selected'] = false;
-                }
-                feelings[index]['selected'] = true;
-                selectedFeeling = feelings[index]['label'];
-              });
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: _buildFeelingChip(
-              feeling['emoji'],
-              feeling['label'],
-              feeling['selected'],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildFeelingChip(String emoji, String label, bool selected) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-      decoration: BoxDecoration(
-        gradient: selected
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)],
-              )
-            : null,
-        color: selected ? null : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: selected
-              ? Color(0xFFD4B5E8).withOpacity(0.6)
-              : Color(0xFFE0E0E0),
-          width: 2,
-        ),
-        boxShadow: [
-          if (selected)
-            BoxShadow(
-              color: Color(0xFFD4B5E8).withOpacity(0.35),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(emoji, style: TextStyle(fontSize: 18)),
-          SizedBox(width: 7),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              color: selected ? Color(0xFF7B5A96) : Color(0xFF6B6B6B),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildThoughtsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)],
-                ),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0xFFD4B5E8).withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Icon(Icons.psychology, color: Colors.white, size: 18),
-            ),
-            SizedBox(width: 8),
-            Text(
-              'ความรู้สึก : $selectedFeeling',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF6B4E7E),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12),
-        Text(
-          'แนวทางที่ใช้จัดการปัญหา',
-          style: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF6B4E7E),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Color(0xFFE0E0E0), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFF9C7AB8).withOpacity(0.1),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: thoughtsController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText:
-                  'อธิบายวิธีที่คุณใช้จัดการกับสถานการณ์ที่เกิดขึ้น......',
-              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(16),
-            ),
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B6B6B),
-              height: 1.6,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต',
-          style: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF6B4E7E),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Color(0xFFE0E0E0), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFF9C7AB8).withOpacity(0.1),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: actionsController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: 'เขียนสิ่งที่คุณได้รับหรือต้องการปรับปรุงในอนาคต.....',
-              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.all(16),
-            ),
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B6B6B),
-              height: 1.6,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          if (thoughtsController.text.isEmpty ||
-              actionsController.text.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('กรุณากรอกข้อมูลให้ครบถ้วน'),
-                backgroundColor: Color(0xFFFF9AA2),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            );
-          } else {
-            JournalData.addEntry({
-              'date': _getCurrentDate(),
-              'issue': selectedIssue,
-              'feeling': selectedFeeling,
-              'thoughts': thoughtsController.text,
-              'actions': actionsController.text,
-            });
-
-            thoughtsController.clear();
-            actionsController.clear();
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text('บันทึกความคิดเรียบร้อยแล้ว'),
-                  ],
-                ),
-                backgroundColor: Color(0xFF66BB6A),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF66BB6A), Color(0xFF81C784)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFF66BB6A).withOpacity(0.5),
-                blurRadius: 15,
-                offset: Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.bookmark, color: Colors.white, size: 24),
-              SizedBox(width: 10),
-              Text(
-                'บันทึกความคิด',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getCurrentDate() {
-    final now = DateTime.now();
-    final weekdays = [
-      'จันทร์',
-      'อังคาร',
-      'พุธ',
-      'พฤหัสบดี',
-      'ศุกร์',
-      'เสาร์',
-      'อาทิตย์',
-    ];
-    final months = [
-      'มกราคม',
-      'กุมภาพันธ์',
-      'มีนาคม',
-      'เมษายน',
-      'พฤษภาคม',
-      'มิถุนายน',
-      'กรกฎาคม',
-      'สิงหาคม',
-      'กันยายน',
-      'ตุลาคม',
-      'พฤศจิกายน',
-      'ธันวาคม',
-    ];
-    return 'วัน${weekdays[now.weekday - 1]} ที่ ${now.day} ${months[now.month - 1]} ${now.year + 543}';
-  }
-}
-
-// ============================================================================
-// JOURNAL DATA - เก็บข้อมูลบันทึก
-// ============================================================================
-
-class JournalData {
-  static List<Map<String, dynamic>> entries = [];
-
-  static void addEntry(Map<String, dynamic> entry) {
-    entries.insert(0, entry);
-  }
-
-  static void removeEntry(Map<String, dynamic> entry) {
-    entries.remove(entry);
-  }
-}
-
-// ============================================================================
-// JOURNAL HISTORY SCREEN - หน้าประวัติบันทึก (ปรับปรุงใหม่ - เน้นการ์ดสวยขึ้น)
-// ============================================================================
-
-class JournalHistoryScreen extends StatefulWidget {
-  const JournalHistoryScreen({Key? key}) : super(key: key);
-
-  @override
-  State<JournalHistoryScreen> createState() => _JournalHistoryScreenState();
-}
-
-class _JournalHistoryScreenState extends State<JournalHistoryScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _floatAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-
-    _floatAnimation = Tween<double>(begin: 0, end: -8).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFE8D5F0), Color(0xFFD4E9F7), Color(0xFFF8F9FA)],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 30), // เพิ่ม space ด้านบน
-                      _buildIllustration(),
-                      SizedBox(height: 20),
-                      _buildTitle(),
-                      SizedBox(height: 8),
-                      _buildSubtitle(),
-                      SizedBox(height: 24),
-                      _buildHistoryHeader(),
-                      SizedBox(height: 16),
-                      JournalData.entries.isEmpty
-                          ? Padding(
-                              padding: EdgeInsets.symmetric(vertical: 60),
-                              child: _buildEmptyState(),
-                            )
-                          : ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(horizontal: 20),
-                              itemCount: JournalData.entries.length,
-                              itemBuilder: (context, index) {
-                                return _buildEnhancedJournalCard(
-                                  JournalData.entries[index],
-                                  index,
-                                );
-                              },
-                            ),
-                      SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => Navigator.pop(context),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0xFF9C7AB8).withOpacity(0.25),
-                      blurRadius: 16,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Color(0xFF7B5A96),
-                  size: 20,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIllustration() {
-    return Center(
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: Offset(0, _floatAnimation.value),
-            child: Transform.scale(
-              scale: _scaleAnimation.value,
-              child: Container(
+              child: SizedBox(
                 width: 160,
                 height: 160,
                 child: Stack(
@@ -1190,13 +236,13 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                         width: 120,
                         height: 25,
                         decoration: BoxDecoration(
-                          color: Color(0xFF9C7AB8).withOpacity(0.12),
+                          color: const Color(0xFF9C7AB8).withOpacity(0.12),
                           borderRadius: BorderRadius.circular(60),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF9C7AB8).withOpacity(0.2),
+                              color: const Color(0xFF9C7AB8).withOpacity(0.2),
                               blurRadius: 25,
-                              offset: Offset(0, 6),
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
@@ -1212,7 +258,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                           width: 85,
                           height: 95,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [Color(0xFFFFE5B4), Color(0xFFFFF4D6)],
@@ -1220,9 +266,9 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Color(0xFFFFD93D).withOpacity(0.35),
+                                color: const Color(0xFFFFD93D).withOpacity(0.35),
                                 blurRadius: 18,
-                                offset: Offset(0, 8),
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
@@ -1276,7 +322,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                         width: 90,
                         height: 100,
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [Color(0xFFFF9AA2), Color(0xFFFFB3BA)],
@@ -1284,9 +330,9 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFFFF9AA2).withOpacity(0.45),
+                              color: const Color(0xFFFF9AA2).withOpacity(0.45),
                               blurRadius: 22,
-                              offset: Offset(0, 10),
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
@@ -1336,25 +382,25 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                     Positioned(
                       top: 0,
                       child: Container(
-                        padding: EdgeInsets.all(14),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFFFFD93D).withOpacity(0.6),
+                              color: const Color(0xFFFFD93D).withOpacity(0.6),
                               blurRadius: 25,
                               spreadRadius: 6,
-                              offset: Offset(0, 6),
+                              offset: const Offset(0, 6),
                             ),
-                            BoxShadow(
+                            const BoxShadow(
                               color: Colors.white,
                               blurRadius: 12,
                               spreadRadius: -4,
                             ),
                           ],
                         ),
-                        child: Text('💡', style: TextStyle(fontSize: 40)),
+                        child: const Text('💡', style: TextStyle(fontSize: 40)),
                       ),
                     ),
                     // ประกายแสง
@@ -1365,11 +411,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: Color(0xFFFFEB3B).withOpacity(0.9),
+                          color: const Color(0xFFFFEB3B).withOpacity(0.9),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFFFFEB3B).withOpacity(0.7),
+                              color: const Color(0xFFFFEB3B).withOpacity(0.7),
                               blurRadius: 12,
                               spreadRadius: 3,
                             ),
@@ -1384,11 +430,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
-                          color: Color(0xFFFFEB3B).withOpacity(0.7),
+                          color: const Color(0xFFFFEB3B).withOpacity(0.7),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFFFFEB3B).withOpacity(0.5),
+                              color: const Color(0xFFFFEB3B).withOpacity(0.5),
                               blurRadius: 10,
                               spreadRadius: 2,
                             ),
@@ -1403,11 +449,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                         width: 5,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: Color(0xFFFFEB3B).withOpacity(0.6),
+                          color: const Color(0xFFFFEB3B).withOpacity(0.6),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFFFFEB3B).withOpacity(0.4),
+                              color: const Color(0xFFFFEB3B).withOpacity(0.4),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -1426,7 +472,986 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
   }
 
   Widget _buildTitle() {
+    return const Center(
+      child: Text(
+        'สมุดสะท้อนความคิด',
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF6B4E7E),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMotivationalText() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF9E6), Color(0xFFFFFDF5)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFFFE082).withOpacity(0.4), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD54F).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFD54F), Color(0xFFFFCA28)],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD54F).withOpacity(0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'บันทึกความคิดของคุณ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6B4E7E),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'เขียนสะท้อนวันนี้ เพื่อเข้าใจตัวเองมากขึ้น',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF8D6E63),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubtitle(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 15,
+        color: Color(0xFF6B4E7E),
+        fontWeight: FontWeight.bold,
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+
+  Widget _buildIssuesGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 2.5,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: issues.length,
+      itemBuilder: (context, index) {
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                for (var issue in issues) {
+                  issue['selected'] = false;
+                }
+                issues[index]['selected'] = true;
+                selectedIssue = issues[index]['label'];
+              });
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: _buildIssueChip(
+              issues[index]['label'],
+              issues[index]['selected'],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildIssueChip(String label, bool selected) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: selected
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFB8D4F1), Color(0xFFCCE2F7)],
+              )
+            : null,
+        color: selected ? null : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: selected
+              ? const Color(0xFFB8D4F1).withOpacity(0.6)
+              : const Color(0xFFE0E0E0),
+          width: 2,
+        ),
+        boxShadow: [
+          if (selected)
+            BoxShadow(
+              color: const Color(0xFFB8D4F1).withOpacity(0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: selected ? const Color(0xFF4A6FA5) : const Color(0xFF7B5A96),
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedIssue() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFE8F4F8), Color(0xFFF5FAFC)],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFB8D4F1).withOpacity(0.6), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFB8D4F1).withOpacity(0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF90B8E8), Color(0xFFADCBEE)],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF90B8E8).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.event_note, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'เหตุการณ์ : $selectedIssue',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF4A6FA5),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeelingsGrid() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: feelings.asMap().entries.map((entry) {
+        int index = entry.key;
+        var feeling = entry.value;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                for (var f in feelings) {
+                  f['selected'] = false;
+                }
+                feelings[index]['selected'] = true;
+                selectedFeeling = feelings[index]['label'];
+              });
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: _buildFeelingChip(
+              feeling['emoji'],
+              feeling['label'],
+              feeling['selected'],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildFeelingChip(String emoji, String label, bool selected) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+      decoration: BoxDecoration(
+        gradient: selected
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)],
+              )
+            : null,
+        color: selected ? null : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: selected
+              ? const Color(0xFFD4B5E8).withOpacity(0.6)
+              : const Color(0xFFE0E0E0),
+          width: 2,
+        ),
+        boxShadow: [
+          if (selected)
+            BoxShadow(
+              color: const Color(0xFFD4B5E8).withOpacity(0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 7),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: selected ? const Color(0xFF7B5A96) : const Color(0xFF6B6B6B),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThoughtsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)],
+                ),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD4B5E8).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.psychology, color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'ความรู้สึก : $selectedFeeling',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF6B4E7E),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'แนวทางที่ใช้จัดการปัญหา',
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6B4E7E),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE0E0E0), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF9C7AB8).withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: thoughtsController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: 'อธิบายวิธีที่คุณใช้จัดการกับสถานการณ์ที่เกิดขึ้น......',
+              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF6B6B6B),
+              height: 1.6,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต',
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6B4E7E),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE0E0E0), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF9C7AB8).withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: actionsController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: 'เขียนสิ่งที่คุณได้รับหรือต้องการปรับปรุงในอนาคต.....',
+              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF6B6B6B),
+              height: 1.6,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          if (thoughtsController.text.isEmpty || actionsController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('กรุณากรอกข้อมูลให้ครบถ้วน'),
+                backgroundColor: Color(0xFFFF9AA2),
+              ),
+            );
+            return;
+          }
+
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getInt('user_id');
+
+          if (userId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('กรุณาเข้าสู่ระบบใหม่')),
+            );
+            return;
+          }
+
+          final success = await ApiService.createDiary({
+            'user_id': userId,
+            'mood': selectedFeeling,
+            'event': selectedIssue,
+            'solution': thoughtsController.text,
+            'improve': actionsController.text,
+          });
+
+          if (success) {
+            thoughtsController.clear();
+            actionsController.clear();
+
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('บันทึกความคิดเรียบร้อยแล้ว'),
+                backgroundColor: Color(0xFF66BB6A),
+              ),
+            );
+          } else {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('บันทึกไม่สำเร็จ'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF66BB6A), Color(0xFF81C784)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF66BB6A).withOpacity(0.5),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.bookmark, color: Colors.white, size: 24),
+              SizedBox(width: 10),
+              Text(
+                'บันทึกความคิด',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// JOURNAL HISTORY SCREEN - หน้าประวัติบันทึก
+// ============================================================================
+
+class JournalHistoryScreen extends StatefulWidget {
+  const JournalHistoryScreen({Key? key}) : super(key: key);
+
+  @override
+  State<JournalHistoryScreen> createState() => _JournalHistoryScreenState();
+}
+
+class _JournalHistoryScreenState extends State<JournalHistoryScreen>
+    with SingleTickerProviderStateMixin {
+  // ✅ State ที่ถูกต้อง - อยู่ใน State class
+  List<Map<String, dynamic>> diaryEntries = [];
+  bool isLoading = true;
+
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _floatAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _floatAnimation = Tween<double>(begin: 0, end: -8).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    // ✅ เรียกโหลดข้อมูลจาก Database
+    _loadDiaryFromDb();
+  }
+
+  // ✅ ฟังก์ชันโหลดข้อมูลจาก Database - อยู่ใน State class
+  Future<void> _loadDiaryFromDb() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    final data = await ApiService.getDiaryByUser(userId);
+
+    setState(() {
+      diaryEntries = data.map<Map<String, dynamic>>((e) {
+        return {
+          'date': e['created_at'] ?? '',
+          'issue': e['event'] ?? '',
+          'feeling': e['mood'] ?? '',
+          'thoughts': e['solution'] ?? '',
+          'actions': e['improve'] ?? '',
+          'id': e['entry_id'], // เก็บ ID ไว้สำหรับลบ
+        };
+      }).toList();
+
+      isLoading = false;
+    });
+  }
+
+  // ✅ ฟังก์ชันลบข้อมูลจาก Database
+  Future<void> _deleteDiaryEntry(int index) async {
+  final entryId = diaryEntries[index]['id'];
+
+  final success = await ApiService.deleteDiary(entryId);
+
+  if (success) {
+    setState(() {
+      diaryEntries.removeAt(index);
+    });
+  } else {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('ลบไม่สำเร็จ'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFE8D5F0), Color(0xFFD4E9F7), Color(0xFFF8F9FA)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF9C7AB8),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 30),
+                            _buildIllustration(),
+                            const SizedBox(height: 20),
+                            _buildTitle(),
+                            const SizedBox(height: 8),
+                            _buildSubtitle(),
+                            const SizedBox(height: 24),
+                            _buildHistoryHeader(),
+                            const SizedBox(height: 16),
+                            diaryEntries.isEmpty
+                                ? const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 60),
+                                    child: _EmptyState(),
+                                  )
+                                : ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    itemCount: diaryEntries.length,
+                                    itemBuilder: (context, index) {
+                                      return _buildEnhancedJournalCard(
+                                        diaryEntries[index],
+                                        index,
+                                      );
+                                    },
+                                  ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.pop(context),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF9C7AB8).withOpacity(0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Color(0xFF7B5A96),
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIllustration() {
     return Center(
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _floatAnimation.value),
+            child: Transform.scale(
+              scale: _scaleAnimation.value,
+              child: SizedBox(
+                width: 160,
+                height: 160,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // เงาพื้นหลัง
+                    Positioned(
+                      bottom: 5,
+                      child: Container(
+                        width: 120,
+                        height: 25,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C7AB8).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(60),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF9C7AB8).withOpacity(0.2),
+                              blurRadius: 25,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // กระดาษด้านหลัง (เหลือง)
+                    Positioned(
+                      right: 25,
+                      top: 35,
+                      child: Transform.rotate(
+                        angle: 0.12,
+                        child: Container(
+                          width: 85,
+                          height: 95,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFFFFE5B4), Color(0xFFFFF4D6)],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD93D).withOpacity(0.35),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                top: 18,
+                                left: 12,
+                                right: 12,
+                                child: Container(
+                                  height: 2.5,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 28,
+                                left: 12,
+                                right: 20,
+                                child: Container(
+                                  height: 2.5,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 38,
+                                left: 12,
+                                right: 15,
+                                child: Container(
+                                  height: 2.5,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.4),
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // กระดาษหลัก (ชมพู)
+                    Positioned(
+                      top: 30,
+                      child: Container(
+                        width: 90,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFFFF9AA2), Color(0xFFFFB3BA)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF9AA2).withOpacity(0.45),
+                              blurRadius: 22,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: 18,
+                              left: 14,
+                              right: 14,
+                              child: Container(
+                                height: 2.5,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 28,
+                              left: 14,
+                              right: 22,
+                              child: Container(
+                                height: 2.5,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 38,
+                              left: 14,
+                              right: 18,
+                              child: Container(
+                                height: 2.5,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // หลอดไฟ
+                    Positioned(
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD93D).withOpacity(0.6),
+                              blurRadius: 25,
+                              spreadRadius: 6,
+                              offset: const Offset(0, 6),
+                            ),
+                            const BoxShadow(
+                              color: Colors.white,
+                              blurRadius: 12,
+                              spreadRadius: -4,
+                            ),
+                          ],
+                        ),
+                        child: const Text('💡', style: TextStyle(fontSize: 40)),
+                      ),
+                    ),
+                    // ประกายแสง
+                    Positioned(
+                      top: 15,
+                      right: 35,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEB3B).withOpacity(0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFEB3B).withOpacity(0.7),
+                              blurRadius: 12,
+                              spreadRadius: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      left: 40,
+                      child: Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEB3B).withOpacity(0.7),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFEB3B).withOpacity(0.5),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 22,
+                      left: 30,
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEB3B).withOpacity(0.6),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFEB3B).withOpacity(0.4),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return const Center(
       child: Text(
         'สมุดสะท้อนความคิด',
         style: TextStyle(
@@ -1442,17 +1467,17 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
   Widget _buildSubtitle() {
     return Center(
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFFFFD54F).withOpacity(0.2),
-              Color(0xFFFFCA28).withOpacity(0.15),
+              const Color(0xFFFFD54F).withOpacity(0.2),
+              const Color(0xFFFFCA28).withOpacity(0.15),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Text(
+        child: const Text(
           'ย้อนดูความคิดและการเติบโตของคุณ',
           style: TextStyle(
             fontSize: 13,
@@ -1466,48 +1491,48 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
 
   Widget _buildHistoryHeader() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFE8D5F0).withOpacity(0.5),
-            Color(0xFFD4E9F7).withOpacity(0.4),
+            const Color(0xFFE8D5F0).withOpacity(0.5),
+            const Color(0xFFD4E9F7).withOpacity(0.4),
           ],
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Color(0xFFD4B5E8).withOpacity(0.4), width: 2),
+        border: Border.all(color: const Color(0xFFD4B5E8).withOpacity(0.4), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFFD4B5E8).withOpacity(0.15),
+            color: const Color(0xFFD4B5E8).withOpacity(0.15),
             blurRadius: 12,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Color(0xFF9C7AB8), Color(0xFFAB8FC9)],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF9C7AB8).withOpacity(0.35),
+                  color: const Color(0xFF9C7AB8).withOpacity(0.35),
                   blurRadius: 10,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: Icon(Icons.history_rounded, color: Colors.white, size: 24),
+            child: const Icon(Icons.history_rounded, color: Colors.white, size: 24),
           ),
-          SizedBox(width: 14),
-          Expanded(
+          const SizedBox(width: 14),
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1528,23 +1553,23 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Color(0xFFFFB3BA), Color(0xFFFF9AA2)],
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFFFF9AA2).withOpacity(0.3),
+                  color: const Color(0xFFFF9AA2).withOpacity(0.3),
                   blurRadius: 8,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Text(
-              '${JournalData.entries.length}',
-              style: TextStyle(
+              '${diaryEntries.length}', // ✅ ใช้ diaryEntries แทน JournalData
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -1556,68 +1581,18 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF9C7AB8).withOpacity(0.15),
-                  Color(0xFFAB8FC9).withOpacity(0.1),
-                ],
-              ),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Color(0xFF9C7AB8).withOpacity(0.3),
-                width: 3,
-              ),
-            ),
-            child: Icon(
-              Icons.inbox_outlined,
-              size: 72,
-              color: Color(0xFF9C7AB8),
-            ),
-          ),
-          SizedBox(height: 24),
-          Text(
-            'ยังไม่มีบันทึก',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF6B4E7E),
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'เริ่มบันทึกความคิดของคุณได้เลย',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF8D6E63),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // การ์ดแบบเรียบง่าย สบายตา
   Widget _buildEnhancedJournalCard(Map<String, dynamic> entry, int index) {
     return Container(
-      margin: EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFE0E0E0), width: 1.5),
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF9C7AB8).withOpacity(0.08),
+            color: const Color(0xFF9C7AB8).withOpacity(0.08),
             blurRadius: 12,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1626,14 +1601,14 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         children: [
           // Header with date and delete button
           Padding(
-            padding: EdgeInsets.all(14),
+            padding: const EdgeInsets.all(14),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
                     entry['date'],
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF6B4E7E),
                       fontWeight: FontWeight.bold,
@@ -1643,15 +1618,15 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () => _showDeleteDialog(entry),
+                    onTap: () => _showDeleteDialog(index),
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Color(0xFFFFEBEE),
+                        color: const Color(0xFFFFEBEE),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.delete_outline_rounded,
                         color: Color(0xFFEF5350),
                         size: 20,
@@ -1662,30 +1637,30 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
               ],
             ),
           ),
-          Divider(height: 1, color: Color(0xFFF0F0F0), thickness: 1),
+          const Divider(height: 1, color: Color(0xFFF0F0F0), thickness: 1),
           // Content
           Padding(
-            padding: EdgeInsets.all(14),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSimpleInfoRow(
                   'เหตุการณ์',
                   entry['issue'],
-                  Color(0xFFF5F5F5),
+                  const Color(0xFFF5F5F5),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 _buildSimpleInfoRow(
                   'ความรู้สึกที่เกิดขึ้น',
                   entry['feeling'],
-                  Color(0xFFF5F5F5),
+                  const Color(0xFFF5F5F5),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 _buildSimpleTextSection(
                   'แนวทางที่ใช้จัดการปัญหา',
                   entry['thoughts'],
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 _buildSimpleTextSection(
                   'สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต',
                   entry['actions'],
@@ -1700,7 +1675,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
 
   Widget _buildSimpleInfoRow(String label, String value, Color bgColor) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(10),
@@ -1710,18 +1685,18 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: TextStyle(fontSize: 13, color: Color(0xFF6B6B6B)),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF6B6B6B)),
                 children: [
                   TextSpan(
                     text: '$label : ',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF6B4E7E),
                     ),
                   ),
                   TextSpan(
                     text: value,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF424242),
                     ),
@@ -1740,10 +1715,10 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(bottom: 6),
+          padding: const EdgeInsets.only(bottom: 6),
           child: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               color: Color(0xFF6B4E7E),
               fontWeight: FontWeight.bold,
@@ -1752,14 +1727,14 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         ),
         Container(
           width: double.infinity,
-          padding: EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Color(0xFFF5F5F5),
+            color: const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
             text,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               color: Color(0xFF424242),
               height: 1.5,
@@ -1771,7 +1746,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     );
   }
 
-  void _showDeleteDialog(Map<String, dynamic> entry) {
+  void _showDeleteDialog(int index) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1779,28 +1754,28 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         title: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Color(0xFFEF5350), Color(0xFFE53935)],
                 ),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0xFFEF5350).withOpacity(0.4),
+                    color: const Color(0xFFEF5350).withOpacity(0.4),
                     blurRadius: 10,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.delete_outline_rounded,
                 color: Colors.white,
                 size: 26,
               ),
             ),
-            SizedBox(width: 14),
-            Text(
+            const SizedBox(width: 14),
+            const Text(
               'ลบบันทึก',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -1810,7 +1785,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
             ),
           ],
         ),
-        content: Text(
+        content: const Text(
           'คุณต้องการลบบันทึกนี้หรือไม่?\nการดำเนินการนี้ไม่สามารถย้อนกลับได้',
           style: TextStyle(color: Color(0xFF6B6B6B), fontSize: 14, height: 1.5),
         ),
@@ -1827,15 +1802,16 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                JournalData.removeEntry(entry);
-              });
+            onPressed: () async {
+              // ✅ ลบข้อมูลจาก Database
+              await _deleteDiaryEntry(index);
+              
+              if (!mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Row(
-                    children: [
+                    children: const [
                       Icon(Icons.check_circle_rounded, color: Colors.white),
                       SizedBox(width: 12),
                       Text(
@@ -1844,31 +1820,89 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                       ),
                     ],
                   ),
-                  backgroundColor: Color(0xFFEF5350),
+                  backgroundColor: const Color(0xFFEF5350),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  margin: EdgeInsets.all(16),
+                  margin: const EdgeInsets.all(16),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFFEF5350),
+              backgroundColor: const Color(0xFFEF5350),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               elevation: 4,
-              shadowColor: Color(0xFFEF5350).withOpacity(0.5),
+              shadowColor: const Color(0xFFEF5350).withOpacity(0.5),
             ),
-            child: Text(
+            child: const Text(
               'ลบ',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 fontSize: 15,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// EMPTY STATE WIDGET - แสดงเมื่อไม่มีบันทึก
+// ============================================================================
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF9C7AB8).withOpacity(0.15),
+                  const Color(0xFFAB8FC9).withOpacity(0.1),
+                ],
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF9C7AB8).withOpacity(0.3),
+                width: 3,
+              ),
+            ),
+            child: const Icon(
+              Icons.inbox_outlined,
+              size: 72,
+              color: Color(0xFF9C7AB8),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'ยังไม่มีบันทึก',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF6B4E7E),
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'เริ่มบันทึกความคิดของคุณได้เลย',
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF8D6E63),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

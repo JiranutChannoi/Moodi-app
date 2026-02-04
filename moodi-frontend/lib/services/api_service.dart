@@ -9,9 +9,11 @@ class ApiService {
     'Content-Type': 'application/json',
   };
 
-  // ---------------- AUTH ----------------
+  // ================= AUTH =================
   static Future<http.Response> login(
-      String email, String password) {
+    String email,
+    String password,
+  ) {
     return http.post(
       Uri.parse('$baseUrl/auth/login'),
       headers: headers,
@@ -22,13 +24,15 @@ class ApiService {
     );
   }
 
-  // ---------------- MOOD ----------------
-  static Future<http.Response> createMood({
+  // ================= MOOD =================
+
+  /// CREATE MOOD
+  static Future<bool> createMood({
     required int userId,
     required String mood,
-    String? note,
-  }) {
-    return http.post(
+    required String note,
+  }) async {
+    final res = await http.post(
       Uri.parse('$baseUrl/mood'),
       headers: headers,
       body: jsonEncode({
@@ -37,44 +41,98 @@ class ApiService {
         'note': note,
       }),
     );
+
+    return res.statusCode == 200 || res.statusCode == 201;
   }
 
+  /// GET MOOD HISTORY
   static Future<List<dynamic>> getMoodByUser(int userId) async {
     final res = await http.get(
       Uri.parse('$baseUrl/mood/$userId'),
       headers: headers,
     );
-    return jsonDecode(res.body);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      return [];
+    }
   }
 
-  // ---------------- DIARY ----------------
-  static Future<http.Response> createDiary(
-      Map<String, dynamic> data) {
-    return http.post(
-      Uri.parse('$baseUrl/diary'),
-      headers: headers,
-      body: jsonEncode(data),
-    );
+  // ================= DIARY =================
+
+ static Future<bool> createDiary(Map<String, dynamic> diaryData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/diary'),
+        headers: headers,
+        body: jsonEncode(diaryData),
+      );
+
+      return response.statusCode == 201 || response.statusCode == 200;
+    } catch (e) {
+      print('Create diary error: $e');
+      return false;
+    }
   }
 
-  // ---------------- QUIZ ----------------
-  static Future<http.Response> createQuiz(
-      Map<String, dynamic> data) {
-    return http.post(
+  static Future<List<dynamic>> getDiaryByUser(int userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/diary/$userId'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? [];
+      }
+      return [];
+    } catch (e) {
+      print('Get diary error: $e');
+      return [];
+    }
+  }
+
+  // ✅ ฟังก์ชันใหม่: ลบ diary entry
+  static Future<bool> deleteDiary(int entryId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/diary/$entryId'),
+        headers: headers,
+      );
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Delete diary error: $e');
+      return false;
+    }
+  }
+
+  // ================= QUIZ =================
+  static Future<bool> createQuiz(
+    Map<String, dynamic> data,
+  ) async {
+    final res = await http.post(
       Uri.parse('$baseUrl/quiz'),
       headers: headers,
       body: jsonEncode(data),
     );
+
+    return res.statusCode == 200 || res.statusCode == 201;
   }
 
-  // ---------------- CHAT ----------------
-  static Future<http.Response> createChat(
-      Map<String, dynamic> data) {
-    return http.post(
+  // ================= CHAT =================
+  static Future<bool> createChat(
+    Map<String, dynamic> data,
+  ) async {
+    final res = await http.post(
       Uri.parse('$baseUrl/chat'),
       headers: headers,
       body: jsonEncode(data),
     );
+
+    return res.statusCode == 200 || res.statusCode == 201;
   }
 
   static Future<List<dynamic>> getChatByUser(int userId) async {
@@ -82,15 +140,25 @@ class ApiService {
       Uri.parse('$baseUrl/chat/$userId'),
       headers: headers,
     );
-    return jsonDecode(res.body);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      return [];
+    }
   }
 
-  // ---------------- RELAX ----------------
+  // ================= RELAX =================
   static Future<List<dynamic>> getRelaxSounds() async {
     final res = await http.get(
       Uri.parse('$baseUrl/relax'),
       headers: headers,
     );
-    return jsonDecode(res.body);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      return [];
+    }
   }
 }
