@@ -1,5 +1,4 @@
-const prisma = require('../config/prisma');
-
+const prisma = require('../prisma');
 // ✅ สร้าง diary entry ใหม่
 exports.createDiary = async (req, res, next) => {
   try {
