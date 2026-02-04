@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./routes/auth');
-const moodRoutes = require('./routes/mood');
+const authRoutes = require('./routes/auth');   // pg + bcrypt
+const moodRoutes = require('./routes/mood');   // prisma
 const diaryRoutes = require('./routes/diary');
 const quizRoutes = require('./routes/quiz');
 const chatRoutes = require('./routes/chat');
@@ -11,42 +11,41 @@ const relaxRoutes = require('./routes/relax');
 
 const app = express();
 
-// ⭐⭐⭐ MIDDLEWARE - ต้องอยู่ก่อน routes
+// ------------------ Middleware ------------------
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Log requests (debug)
+// log request (debug)
 app.use((req, _res, next) => {
   console.log('➡', req.method, req.url, '| body:', req.body);
   next();
 });
 
-// Health Check
+// ------------------ Health Check ------------------
 app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'moodi-backend' });
 });
 
-// Routes
-app.use('/auth', authRoutes);
+// ------------------ Routes ------------------
+app.use('/auth', authRoutes);   // ใช้ auth.js ตัวเดิม
 app.use('/mood', moodRoutes);
 app.use('/diary', diaryRoutes);
 app.use('/quiz', quizRoutes);
 app.use('/chat', chatRoutes);
 app.use('/relax', relaxRoutes);
 
-// 404 Handler
+// ------------------ 404 ------------------
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error Handler
+// ------------------ Error Handler ------------------
 app.use((err, _req, res, _next) => {
   console.error('💥 Server Error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start Server
+// ------------------ Start Server ------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Moodi API running on port ${PORT}`);
