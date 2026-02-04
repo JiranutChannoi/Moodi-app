@@ -120,14 +120,173 @@ class _MentalHealthAssessmentScreenState
   }
 
   Widget _buildIllustration() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Outer glow effect
+        Container(
+          width: 165,
+          height: 165,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [Color(0xFFCE93D8).withOpacity(0.3), Colors.transparent],
+              stops: [0.4, 1.0],
+            ),
+          ),
+        ),
+        // Main container with enhanced design
+        Container(
+          width: 145,
+          height: 145,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.95),
+                Colors.white.withOpacity(0.85),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xFFCE93D8).withOpacity(0.25),
+                blurRadius: 20,
+                spreadRadius: 2,
+                offset: Offset(0, 8),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 25,
+                offset: Offset(0, 10),
+              ),
+            ],
+            border: Border.all(color: Color(0xFFCE93D8), width: 3),
+          ),
+          child: Stack(
+            children: [
+              // Decorative corner accents
+              Positioned(
+                top: 15,
+                right: 15,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF9C27B0).withOpacity(0.4),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 20,
+                left: 20,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF00BCD4).withOpacity(0.4),
+                  ),
+                ),
+              ),
+              // Inner decorative circle
+              Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Color(0xFFE1BEE7).withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+              // Modern emoji content with icons
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Top row - happy to neutral
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildEmojiWithIcon(
+                          '😊',
+                          Color(0xFF4CAF50),
+                          Icons.sentiment_very_satisfied,
+                        ),
+                        SizedBox(width: 12),
+                        _buildEmojiWithIcon(
+                          '😐',
+                          Color(0xFFFF9800),
+                          Icons.sentiment_neutral,
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    // Bottom row - sad to very sad
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildEmojiWithIcon(
+                          '😔',
+                          Color(0xFFFF5722),
+                          Icons.sentiment_dissatisfied,
+                        ),
+                        SizedBox(width: 12),
+                        _buildEmojiWithIcon(
+                          '😢',
+                          Color(0xFF9C27B0),
+                          Icons.sentiment_very_dissatisfied,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Decorative sparkles around the circle
+        Positioned(
+          top: 0,
+          right: 25,
+          child: Icon(Icons.auto_awesome, color: Color(0xFFCE93D8), size: 16),
+        ),
+        Positioned(
+          bottom: 5,
+          left: 20,
+          child: Icon(
+            Icons.auto_awesome,
+            color: Color(0xFF00BCD4).withOpacity(0.6),
+            size: 14,
+          ),
+        ),
+        Positioned(
+          top: 25,
+          left: 10,
+          child: Icon(
+            Icons.favorite,
+            color: Color(0xFF9C27B0).withOpacity(0.5),
+            size: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmojiWithIcon(String emoji, Color color, IconData icon) {
     return Container(
-      width: 120,
-      height: 120,
+      padding: EdgeInsets.all(4),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(0.5),
+        color: color.withOpacity(0.1),
       ),
-      child: Center(child: Text('👆😊😐😢', style: TextStyle(fontSize: 40))),
+      child: Text(emoji, style: TextStyle(fontSize: 26)),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -6,9 +7,10 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/mood_tracking_screen.dart';
-import 'screens/relaxation_screen.dart'; // ✅ เพิ่มบรรทัดนี้
-import 'screens/ai_chat_screen.dart'; // เพิ่มบรรทัดนี้
+import 'screens/relaxation_screen.dart';
+import 'screens/ai_chat_screen.dart';
 import 'screens/mental_health_assessment_screen.dart';
+import 'screens/journal_main_screen.dart'; // ✅ เพิ่มหน้านี้
 
 void main() {
   runApp(const MoodiApp());
@@ -21,6 +23,7 @@ class MoodiApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Moodi',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
@@ -40,12 +43,11 @@ class MoodiApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/account': (context) => const AccountScreen(),
         '/mood': (context) => const MoodTrackingScreen(),
-        '/relaxation': (context) =>
-            const RelaxationScreen(), // ✅ เพิ่มบรรทัดนี้
+        '/relaxation': (context) => const RelaxationScreen(),
         '/ai-chat': (context) => const AIChatScreen(),
         '/mental-health': (context) => const MentalHealthAssessmentScreen(),
+        '/journal': (context) => const JournalMainScreen(), // ✅ route ใหม่
       },
-      debugShowCheckedModeBanner: false,
     );
   }
 }
