@@ -32,6 +32,7 @@ model diaryentries {
   event    String?
   solution String?
   improve  String?
+  createdAt DateTime @default(now()) @db.Timestamp(6)
 }
 
 model keywordreplies {
@@ -61,6 +62,7 @@ model password_reset_tokens {
 model quizresults {
   quiz_id     Int       @id @default(autoincrement())
   user_id     Int?
+  quiz_type   String    @db.VarChar(20) // "PHQ9" | "ST5"
   total_score Int?
   level       String?   @db.VarChar(50)
   timestamp   DateTime? @default(now()) @db.Timestamp(6)
