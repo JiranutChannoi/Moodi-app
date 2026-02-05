@@ -50,7 +50,7 @@ exports.getDiaryByUser = async (req, res, next) => {
         user_id: userId,
       },
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc', // ✅ แก้ตรงนี้
       },
     });
 
@@ -65,6 +65,7 @@ exports.getDiaryByUser = async (req, res, next) => {
     next(err);
   }
 };
+
 
 // ✅ ลบ diary entry
 exports.deleteDiary = async (req, res, next) => {
