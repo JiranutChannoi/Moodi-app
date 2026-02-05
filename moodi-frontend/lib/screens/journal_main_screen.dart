@@ -994,7 +994,7 @@ class _JournalMainScreenState extends State<JournalMainScreen>
 }
 
 // ============================================================================
-// JOURNAL HISTORY SCREEN - หน้าประวัติบันทึก
+// JOURNAL HISTORY SCREEN - หน้าประวัติบันทึก (✅ แก้ไขแล้ว)
 // ============================================================================
 
 class JournalHistoryScreen extends StatefulWidget {
@@ -1006,7 +1006,6 @@ class JournalHistoryScreen extends StatefulWidget {
 
 class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     with SingleTickerProviderStateMixin {
-  // ✅ State ที่ถูกต้อง - อยู่ใน State class
   List<Map<String, dynamic>> diaryEntries = [];
   bool isLoading = true;
 
@@ -1031,60 +1030,141 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
-    // ✅ เรียกโหลดข้อมูลจาก Database
     _loadDiaryFromDb();
   }
 
-  // ✅ ฟังก์ชันโหลดข้อมูลจาก Database - อยู่ใน State class
+  // ✅ ฟังก์ชันโหลดข้อมูลที่แก้ไขแล้ว - รองรับทุกรูปแบบ response
   Future<void> _loadDiaryFromDb() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('user_id');
-    if (userId == null) {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+      
+      print('🔍 DEBUG: userId = $userId'); // เพิ่ม log
+
+      if (userId == null) {
+        print('❌ ERROR: userId is null');
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+
+      final data = await ApiService.getDiaryByUser(userId);
+      print('📦 DEBUG: Received ${data.length} entries'); // เพิ่ม log
+      
+      if (data.isEmpty) {
+        print('⚠️ WARNING: No diary entries found');
+      }
+
       setState(() {
+        diaryEntries = data.map<Map<String, dynamic>>((e) {
+          // ✅ แปลงวันที่แบบปลอดภัย
+          String formattedDate = 'ไม่ระบุวันที่';
+          if (e['created_at'] != null && e['created_at'].toString().isNotEmpty) {
+            try {
+              final createdAt = DateTime.parse(e['created_at'].toString()).toLocal();
+              formattedDate = '${createdAt.day}/${createdAt.month}/${createdAt.year + 543} '
+                  '${createdAt.hour.toString().padLeft(2, '0')}:'
+                  '${createdAt.minute.toString().padLeft(2, '0')} น.';
+            } catch (dateError) {
+              print('❌ Date parsing error: $dateError');
+              formattedDate = 'วันที่ไม่ถูกต้อง';
+            }
+          }
+
+          // ✅ ดึงข้อมูลแบบปลอดภัย พร้อม default values
+          final entry = {
+            'date': formattedDate,
+            'issue': (e['event'] ?? 'ไม่ระบุเหตุการณ์').toString(),
+            'feeling': (e['mood'] ?? 'ไม่ระบุอารมณ์').toString(),
+            'thoughts': (e['solution'] ?? 'ไม่ระบุ').toString(),
+            'actions': (e['improve'] ?? 'ไม่ระบุ').toString(),
+            'id': e['entry_id'] ?? e['id'] ?? 0, // รองรับทั้ง entry_id และ id
+          };
+
+          print('✅ Entry processed: ${entry['id']}'); // เพิ่ม log
+          return entry;
+        }).toList();
+
         isLoading = false;
       });
-      return;
+
+      print('✅ SUCCESS: Loaded ${diaryEntries.length} entries');
+
+    } catch (e) {
+      print('❌ CRITICAL ERROR in _loadDiaryFromDb: $e');
+      setState(() {
+        isLoading = false;
+        diaryEntries = [];
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('เกิดข้อผิดพลาดในการโหลดข้อมูล: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     }
-
-    final data = await ApiService.getDiaryByUser(userId);
-
-    setState(() {
-      diaryEntries = data.map<Map<String, dynamic>>((e) {
-        return {
-          'date': e['created_at'] ?? '',
-          'issue': e['event'] ?? '',
-          'feeling': e['mood'] ?? '',
-          'thoughts': e['solution'] ?? '',
-          'actions': e['improve'] ?? '',
-          'id': e['entry_id'], // เก็บ ID ไว้สำหรับลบ
-        };
-      }).toList();
-
-      isLoading = false;
-    });
   }
 
-  // ✅ ฟังก์ชันลบข้อมูลจาก Database
+  // ✅ ฟังก์ชันลบข้อมูล
   Future<void> _deleteDiaryEntry(int index) async {
-  final entryId = diaryEntries[index]['id'];
+    try {
+      final entryId = diaryEntries[index]['id'];
+      print('🗑️ Attempting to delete entry: $entryId');
 
-  final success = await ApiService.deleteDiary(entryId);
+      final success = await ApiService.deleteDiary(entryId);
 
-  if (success) {
-    setState(() {
-      diaryEntries.removeAt(index);
-    });
-  } else {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('ลบไม่สำเร็จ'),
-        backgroundColor: Colors.red,
-      ),
-    );
+      if (success) {
+        setState(() {
+          diaryEntries.removeAt(index);
+        });
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle_rounded, color: Colors.white),
+                SizedBox(width: 12),
+                Text(
+                  'ลบบันทึกเรียบร้อยแล้ว',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF66BB6A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ลบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Delete error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('เกิดข้อผิดพลาด: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
-}
-
 
   @override
   void dispose() {
@@ -1568,7 +1648,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
               ],
             ),
             child: Text(
-              '${diaryEntries.length}', // ✅ ใช้ diaryEntries แทน JournalData
+              '${diaryEntries.length}',
               style: const TextStyle(
                 fontSize: 16,
                 color: Colors.white,
@@ -1803,31 +1883,8 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
           ),
           ElevatedButton(
             onPressed: () async {
-              // ✅ ลบข้อมูลจาก Database
-              await _deleteDiaryEntry(index);
-              
-              if (!mounted) return;
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: const [
-                      Icon(Icons.check_circle_rounded, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text(
-                        'ลบบันทึกเรียบร้อยแล้ว',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  backgroundColor: const Color(0xFFEF5350),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  margin: const EdgeInsets.all(16),
-                ),
-              );
+              await _deleteDiaryEntry(index);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF5350),
@@ -1854,7 +1911,7 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
 }
 
 // ============================================================================
-// EMPTY STATE WIDGET - แสดงเมื่อไม่มีบันทึก
+// EMPTY STATE WIDGET
 // ============================================================================
 
 class _EmptyState extends StatelessWidget {
