@@ -10,7 +10,8 @@ const {
 router.post('/', createDiary);
 
 // ✅ ดึง diary entries ทั้งหมดของ user
-router.get('/:user_id', getDiaryByUser);
+router.get('/:userId', getDiaryByUser);
+
 
 // ✅ ลบ diary entry (เพิ่มใหม่)
 router.delete('/:id', deleteDiary);

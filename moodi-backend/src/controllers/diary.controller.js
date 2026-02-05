@@ -42,27 +42,24 @@ exports.createDiary = async (req, res, next) => {
 // ✅ ดึง diary entries ทั้งหมดของ user
 exports.getDiaryByUser = async (req, res, next) => {
   try {
-    const userId = Number(req.params.user_id);
-    console.log('📖 Getting diary for user:', userId);
+    const userId = Number(req.params.userId);
 
     const entries = await prisma.diaryentries.findMany({
       where: {
         user_id: userId,
       },
       orderBy: {
-        createdAt: 'desc', // ✅ แก้ตรงนี้
+        entry_id: 'desc', // ✅ ใช้ field ที่มีจริง
       },
     });
-
-    console.log(`✅ Found ${entries.length} diary entries`);
 
     res.status(200).json({
       success: true,
       data: entries,
     });
   } catch (err) {
-    console.error('❌ Get diary error:', err);
-    next(err);
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };
 
