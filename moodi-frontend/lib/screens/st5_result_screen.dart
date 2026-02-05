@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'st5_test_screen.dart';
+import 'api_service.dart';
 
-class ST5ResultScreen extends StatelessWidget {
+class ST5ResultScreen extends StatefulWidget {
   final int score;
   final int maxScore;
   final String level;
@@ -16,6 +17,36 @@ class ST5ResultScreen extends StatelessWidget {
     required this.description,
     required this.color,
   }) : super(key: key);
+
+  @override
+  State<ST5ResultScreen> createState() => _ST5ResultScreenState();
+}
+
+class _ST5ResultScreenState extends State<ST5ResultScreen> {
+  bool _saved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _saveResult();
+  }
+
+  Future<void> _saveResult() async {
+    if (_saved) return;
+
+    try {
+      await ApiService.saveQuizResult(
+        userId: 1, // 🔴 TODO: ใส่ user_id จริงจากระบบ login
+        quizType: 'ST5',
+        totalScore: widget.score,
+        level: widget.level,
+      );
+      _saved = true;
+      debugPrint('✅ ST5 result saved: ${widget.score} - ${widget.level}');
+    } catch (e) {
+      debugPrint('❌ ST5 save error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,15 +140,15 @@ class ST5ResultScreen extends StatelessWidget {
                                   text: TextSpan(
                                     children: [
                                       TextSpan(
-                                        text: '${(score * value).toInt()}',
+                                        text: '${(widget.score * value).toInt()}',
                                         style: TextStyle(
                                           fontSize: 48,
                                           fontWeight: FontWeight.bold,
-                                          color: color,
+                                          color: widget.color,
                                         ),
                                       ),
                                       TextSpan(
-                                        text: '/$maxScore',
+                                        text: '/${widget.maxScore}',
                                         style: TextStyle(
                                           fontSize: 24,
                                           color: Colors.grey.shade600,
@@ -135,21 +166,21 @@ class ST5ResultScreen extends StatelessWidget {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: color.withOpacity(0.1),
+                                color: widget.color.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                'ระดับ : $level',
+                                'ระดับ : ${widget.level}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: color,
+                                  color: widget.color,
                                 ),
                               ),
                             ),
                             SizedBox(height: 16),
                             Text(
-                              description,
+                              widget.description,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
@@ -205,9 +236,9 @@ class ST5ResultScreen extends StatelessWidget {
   }
 
   String _getEmoji() {
-    if (score <= 4) return '😊';
-    if (score <= 9) return '🙂';
-    if (score <= 14) return '😐';
+    if (widget.score <= 4) return '😊';
+    if (widget.score <= 9) return '🙂';
+    if (widget.score <= 14) return '😐';
     return '😰';
   }
 
