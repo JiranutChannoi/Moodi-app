@@ -1,241 +1,127 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
+import 'mood_tracking_screen.dart';
 
 class OverviewScreen extends StatefulWidget {
-  const OverviewScreen({Key? key}) : super(key: key);
-
+  const OverviewScreen({super.key});
   @override
-  _OverviewScreenState createState() => _OverviewScreenState();
+  State<OverviewScreen> createState() => _OverviewScreenState();
 }
 
-class _OverviewScreenState extends State<OverviewScreen>
-    with TickerProviderStateMixin {
-  String selectedView = 'week'; // 'week' หรือ 'month'
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
+class _OverviewScreenState extends State<OverviewScreen> {
+  bool _loading = true;
+  List<Map<String, dynamic>> _entries = [];
 
-  // ข้อมูลอารมณ์ (Mock data - จะเปลี่ยนเป็นดึงจากฐานข้อมูลจริง)
-  Map<DateTime, Map<String, dynamic>> moodHistory = {};
-
-  // สีของแต่ละอารมณ์
-  final Map<String, Color> moodColors = {
-    'มีความสุขมาก': Color(0xFFFFD54F), // เหลืองสดใส
-    'มีความสุข': Color(0xFFFFE082),
-    'ปกติ': Color(0xFF81C784), // เขียว
-    'เศร้า': Color(0xFF64B5F6), // ฟ้า
-    'เศร้ามาก': Color(0xFF5E35B1), // ม่วงเข้ม
-    'โกรธ': Color(0xFFEF5350), // แดง
-    'วิตกกังวล': Color(0xFFFF9800), // ส้ม
-    'เครียด': Color(0xFFE57373),
+  final Map<String, String> _moodEmojis = {
+    'Happy': '😊', 'Calm': '😌', 'Neutral': '😐',
+    'Sad': '😢', 'Anxious': '😰', 'Angry': '😡',
+  };
+  final Map<String, String> _moodThLabels = {
+    'Happy': 'มีความสุข', 'Calm': 'สงบ', 'Neutral': 'ปกติ',
+    'Sad': 'เศร้า', 'Anxious': 'วิตกกังวล', 'Angry': 'โกรธ',
+  };
+  final Map<String, Color> _moodColors = {
+    'Happy': const Color(0xFFFFD93D), 'Calm': const Color(0xFF6BCB77),
+    'Neutral': const Color(0xFFA8DADC), 'Sad': const Color(0xFF4D96FF),
+    'Anxious': const Color(0xFF9575CD), 'Angry': const Color(0xFFFF6B6B),
   };
 
-  final Map<String, String> moodEmojis = {
-    'มีความสุขมาก': '😄',
-    'มีความสุข': '🙂',
-    'ปกติ': '😐',
-    'เศร้า': '😔',
-    'เศร้ามาก': '😢',
-    'โกรธ': '😠',
-    'วิตกกังวล': '😰',
-    'เครียด': '😫',
-  };
+  double get _avgScore {
+    if (_entries.isEmpty) return 0;
+    final scores = _entries.map((e) => moodScoreMap[e['mood']] ?? 3);
+    return scores.reduce((a, b) => a + b) / _entries.length;
+  }
+
+  Map<String, int> get _moodCounts {
+    final map = <String, int>{};
+    for (final e in _entries) {
+      map[e['mood']] = (map[e['mood']] ?? 0) + 1;
+    }
+    return map;
+  }
+
+  String? get _dominantMood {
+    final mc = _moodCounts;
+    if (mc.isEmpty) return null;
+    return mc.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+  }
+
+  int get _positivePct {
+    if (_entries.isEmpty) return 0;
+    const pos = {'Happy', 'Calm', 'Neutral'};
+    final count = _moodCounts.entries
+        .where((e) => pos.contains(e.key))
+        .fold(0, (s, e) => s + e.value);
+    return ((count / _entries.length) * 100).round();
+  }
+
+  List<List<Map<String, dynamic>>> get _weekDayEntries {
+    final now = DateTime.now();
+    final start = now.subtract(Duration(days: now.weekday - 1));
+    return List.generate(7, (i) {
+      final d = DateTime(start.year, start.month, start.day + i);
+      return _entries.where((e) {
+        final ts = e['timestamp'] as DateTime;
+        return ts.year == d.year && ts.month == d.month && ts.day == d.day;
+      }).toList();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _generateMockData();
-
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 400),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-
-    _fadeController.forward();
+    _loadData();
   }
 
-  // สร้างข้อมูลตัวอย่าง (Mock Data)
-  void _generateMockData() {
-    final random = Random();
-    final moods = moodColors.keys.toList();
-    final now = DateTime.now();
-
-    // สร้างข้อมูล 60 วันย้อนหลัง
-    for (int i = 0; i < 60; i++) {
-      final date = now.subtract(Duration(days: i));
-      final dateKey = DateTime(date.year, date.month, date.day);
-
-      // สุ่มว่าวันนี้มีบันทึกหรือไม่ (80% มีบันทึก)
-      if (random.nextDouble() > 0.2) {
-        moodHistory[dateKey] = {
-          'mood': moods[random.nextInt(moods.length)],
-          'note': 'บันทึกความรู้สึกประจำวัน',
-          'time': TimeOfDay(
-            hour: 8 + random.nextInt(14),
-            minute: random.nextInt(60),
-          ),
-        };
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    super.dispose();
+  Future<void> _loadData() async {
+    setState(() => _loading = true);
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId == null) { setState(() => _loading = false); return; }
+    final data = await ApiService.getMoodByUser(userId);
+    setState(() {
+      _entries = data.map<Map<String, dynamic>>((item) => {
+        'mood': item['mood'],
+        'note': item['note'] ?? '',
+        'timestamp': DateTime.parse(item['timestamp']).toUtc().add(const Duration(hours: 7)),
+      }).toList();
+      _loading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF3E5F5), Color(0xFFE1F5FE)],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildViewSelector(),
-              Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        _buildMoodSummaryCard(),
-                        SizedBox(height: 20),
-                        _buildHeatmapCard(),
-                        SizedBox(height: 20),
-                        _buildMoodDistributionCard(),
-                        SizedBox(height: 20),
-                        _buildInsightsCard(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Header
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: Color(0xFF6A1B9A)),
-            onPressed: () => Navigator.pop(context),
-          ),
-          SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'ภาพรวมอารมณ์',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF6A1B9A),
-                ),
-              ),
-              Text(
-                'สรุปความรู้สึกของคุณ',
-                style: TextStyle(fontSize: 14, color: Color(0xFF9C27B0)),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ตัวเลือกมุมมอง (สัปดาห์/เดือน)
-  Widget _buildViewSelector() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildViewButton(
-              'รายสัปดาห์',
-              'week',
-              Icons.view_week_rounded,
-            ),
-          ),
-          Expanded(
-            child: _buildViewButton(
-              'รายเดือน',
-              'month',
-              Icons.calendar_month_rounded,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewButton(String title, String view, IconData icon) {
-    final isSelected = selectedView == view;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedView = view;
-          _fadeController.reset();
-          _fadeController.forward();
-        });
-      },
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)])
-              : null,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: const Color(0xFFF5F0FF),
+      body: SafeArea(
+        child: Column(
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.white : Color(0xFF9E9E9E),
-              size: 20,
-            ),
-            SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? Colors.white : Color(0xFF9E9E9E),
-              ),
+            _topBar(context),
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF7C4DFF)))
+                  : _entries.isEmpty
+                      ? _emptyState()
+                      : RefreshIndicator(
+                          onRefresh: _loadData,
+                          color: const Color(0xFF7C4DFF),
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                _scoreSection(),
+                                const SizedBox(height: 20),
+                                _heatmapSection(),
+                                const SizedBox(height: 20),
+                                _distributionSection(),
+                              ],
+                            ),
+                          ),
+                        ),
             ),
           ],
         ),
@@ -243,851 +129,552 @@ class _OverviewScreenState extends State<OverviewScreen>
     );
   }
 
-  // การ์ดสรุปอารมณ์โดยรวม
-  Widget _buildMoodSummaryCard() {
-    final summary = _calculateMoodSummary();
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFFFFFF), Color(0xFFF5F5F5)],
+  Widget _topBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 8)]),
+              child: const Icon(Icons.arrow_back_ios_new_rounded, size: 17, color: Color(0xFF7C4DFF)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Text('ภาพรวมอารมณ์', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF2D1B69))),
+          const Spacer(),
+          GestureDetector(
+            onTap: _loadData,
+            child: Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 8)]),
+              child: const Icon(Icons.refresh_rounded, size: 19, color: Color(0xFF7C4DFF)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    return Center(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Text('📊', style: TextStyle(fontSize: 52)),
+        const SizedBox(height: 12),
+        const Text('ยังไม่มีข้อมูลอารมณ์', style: TextStyle(fontSize: 15, color: Color(0xFFAAAAAA))),
+        const SizedBox(height: 4),
+        const Text('กลับไปบันทึกอารมณ์ก่อนนะ', style: TextStyle(fontSize: 13, color: Color(0xFFCCCCCC))),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7C4DFF),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
+          child: const Text('ไปบันทึกอารมณ์', style: TextStyle(color: Colors.white)),
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF9C27B0), Color(0xFFBA68C8)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.analytics_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              SizedBox(width: 12),
-              Text(
-                'สรุปอารมณ์${selectedView == 'week' ? 'สัปดาห์นี้' : 'เดือนนี้'}',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF37474F),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryItem(
-                  'บันทึกแล้ว',
-                  '${summary['totalDays']} วัน',
-                  Icons.edit_calendar_rounded,
-                  Color(0xFF42A5F5),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _buildSummaryItem(
-                  'อารมณ์ดี',
-                  '${summary['goodMoodPercentage']}%',
-                  Icons.sentiment_satisfied_rounded,
-                  Color(0xFF66BB6A),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: summary['dominantColor'].withOpacity(0.1),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: summary['dominantColor'].withOpacity(0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(summary['dominantEmoji'], style: TextStyle(fontSize: 32)),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'อารมณ์ที่พบบ่อยที่สุด',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF78909C),
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        summary['dominantMood'],
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF37474F),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      ]),
     );
   }
 
-  Widget _buildSummaryItem(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _scoreSection() {
+    final avg = _avgScore;
+    final level = getMoodLevel(avg);
+    final pct = ((avg / 5.0) * 100).clamp(0, 100).toInt();
+    final dom = _dominantMood;
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+        gradient: LinearGradient(colors: [level.color.withOpacity(0.75), level.color.withOpacity(0.35)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [BoxShadow(color: level.color.withOpacity(0.28), blurRadius: 14, offset: const Offset(0, 5))],
       ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 28),
-          SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF37474F),
-            ),
-          ),
-          SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 12, color: Color(0xFF78909C))),
-        ],
-      ),
-    );
-  }
-
-  // การ์ด Heatmap
-  Widget _buildHeatmapCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.grid_on_rounded, color: Color(0xFF9C27B0), size: 22),
-              SizedBox(width: 8),
-              Text(
-                'ตารางบันทึกอารมณ์',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF37474F),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildHeatmap(),
-          SizedBox(height: 16),
-          _buildHeatmapLegend(),
-        ],
-      ),
-    );
-  }
-
-  // สร้าง Heatmap
-  Widget _buildHeatmap() {
-    if (selectedView == 'week') {
-      return _buildWeeklyHeatmap();
-    } else {
-      return _buildMonthlyHeatmap();
-    }
-  }
-
-  // Heatmap รายสัปดาห์
-  Widget _buildWeeklyHeatmap() {
-    final now = DateTime.now();
-    final weekDays = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
-    final weeks = <List<DateTime>>[];
-
-    // สร้าง 4 สัปดาห์ย้อนหลัง
-    for (int week = 0; week < 4; week++) {
-      final weekDates = <DateTime>[];
-      for (int day = 0; day < 7; day++) {
-        final date = now.subtract(Duration(days: (3 - week) * 7 + (6 - day)));
-        weekDates.add(DateTime(date.year, date.month, date.day));
-      }
-      weeks.add(weekDates);
-    }
-
-    return Column(
-      children: [
-        // Header วันในสัปดาห์
-        Row(
-          children: [
-            SizedBox(width: 40), // เว้นที่สำหรับ label สัปดาห์
-            ...weekDays.map(
-              (day) => Expanded(
-                child: Center(
-                  child: Text(
-                    day,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF78909C),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      child: Column(children: [
+        Row(children: [
+          Stack(alignment: Alignment.center, children: [
+            SizedBox(width: 80, height: 80,
+              child: CircularProgressIndicator(value: avg / 5, strokeWidth: 8,
+                backgroundColor: Colors.white.withOpacity(0.3),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white))),
+            Column(mainAxisSize: MainAxisSize.min, children: [
+              Text('$pct', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, height: 1)),
+              Text('%', style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.8))),
+            ]),
+          ]),
+          const SizedBox(width: 16),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Text(level.emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 6),
+              Text(level.labelTh, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
+            ]),
+            const SizedBox(height: 3),
+            Text(level.description, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          ])),
+        ]),
+        const SizedBox(height: 16),
+        Row(children: [
+          _statChip('บันทึกแล้ว', '${_entries.length} ครั้ง', Icons.edit_note_rounded),
+          const SizedBox(width: 10),
+          _statChip('อารมณ์ดี', '$_positivePct%', Icons.sentiment_satisfied_alt_rounded),
+          if (dom != null) ...[
+            const SizedBox(width: 10),
+            _statChip('บ่อยสุด', _moodEmojis[dom] ?? '', Icons.star_rounded),
           ],
-        ),
-        SizedBox(height: 8),
-        // Heatmap cells
-        ...weeks.asMap().entries.map((entry) {
-          final weekIndex = entry.key;
-          final weekDates = entry.value;
-          return Padding(
-            padding: EdgeInsets.only(bottom: 6),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 40,
-                  child: Text(
-                    'ส.${4 - weekIndex}',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF9E9E9E)),
-                  ),
-                ),
-                ...weekDates.map(
-                  (date) => Expanded(child: _buildHeatmapCell(date)),
-                ),
-              ],
-            ),
-          );
-        }),
-      ],
+        ]),
+      ]),
     );
   }
 
-  // Heatmap รายเดือน
-  Widget _buildMonthlyHeatmap() {
-    final now = DateTime.now();
-    final firstDay = DateTime(now.year, now.month, 1);
-    final lastDay = DateTime(now.year, now.month + 1, 0);
-    final daysInMonth = lastDay.day;
-    final startWeekday = firstDay.weekday % 7;
-
-    final weeks = <List<DateTime?>>[];
-    var currentWeek = <DateTime?>[];
-
-    // เติมช่องว่างต้นสัปดาห์
-    for (int i = 0; i < startWeekday; i++) {
-      currentWeek.add(null);
-    }
-
-    // เติมวันที่ในเดือน
-    for (int day = 1; day <= daysInMonth; day++) {
-      currentWeek.add(DateTime(now.year, now.month, day));
-      if (currentWeek.length == 7) {
-        weeks.add(List.from(currentWeek));
-        currentWeek.clear();
-      }
-    }
-
-    // เติมช่องว่างท้ายสัปดาห์
-    if (currentWeek.isNotEmpty) {
-      while (currentWeek.length < 7) {
-        currentWeek.add(null);
-      }
-      weeks.add(currentWeek);
-    }
-
-    final weekDays = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
-
-    return Column(
-      children: [
-        // Header
-        Padding(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Text(
-            DateFormat('MMMM yyyy', 'th').format(now),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF6A1B9A),
-            ),
-          ),
-        ),
-        // วันในสัปดาห์
-        Row(
-          children: weekDays
-              .map(
-                (day) => Expanded(
-                  child: Center(
-                    child: Text(
-                      day,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF78909C),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
-        SizedBox(height: 8),
-        // Heatmap cells
-        ...weeks.map(
-          (week) => Padding(
-            padding: EdgeInsets.only(bottom: 6),
-            child: Row(
-              children: week
-                  .map(
-                    (date) => Expanded(
-                      child: date != null
-                          ? _buildHeatmapCell(date)
-                          : SizedBox(height: 36),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Cell ของ Heatmap
-  Widget _buildHeatmapCell(DateTime date) {
-    final mood = moodHistory[date];
-    final hasData = mood != null;
-    final color = hasData
-        ? moodColors[mood['mood']] ?? Colors.grey
-        : Colors.grey[200];
-    final isToday =
-        date.year == DateTime.now().year &&
-        date.month == DateTime.now().month &&
-        date.day == DateTime.now().day;
-
-    return GestureDetector(
-      onTap: hasData
-          ? () {
-              _showMoodDetail(date, mood);
-            }
-          : null,
+  Widget _statChip(String label, String value, IconData icon) {
+    return Expanded(
       child: Container(
-        margin: EdgeInsets.all(2),
-        height: 36,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8),
-          border: isToday
-              ? Border.all(color: Color(0xFF6A1B9A), width: 2.5)
-              : Border.all(color: Colors.white, width: 1),
-          boxShadow: hasData
-              ? [
-                  BoxShadow(
-                    color: color!.withOpacity(0.4),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            '${date.day}',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
-              color: hasData ? Colors.white : Color(0xFFBDBDBD),
-            ),
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(14)),
+        child: Column(children: [
+          Icon(icon, size: 18, color: Colors.white),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
+          Text(label, style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.8))),
+        ]),
       ),
     );
   }
 
-  // Legend ของ Heatmap
-  Widget _buildHeatmapLegend() {
+  Widget _heatmapSection() {
+    final now = DateTime.now();
+    final start = now.subtract(Duration(days: now.weekday - 1));
+    final dayLabels = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
+    final dayEntries = _weekDayEntries;
+    final counts = dayEntries.map((e) => e.length).toList();
+    final maxC = counts.reduce((a, b) => a > b ? a : b);
+    final effMax = maxC < 1 ? 1 : maxC;
+
     return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'คำอธิบาย',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF78909C),
-            ),
-          ),
-          SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: moodColors.entries.take(6).map((entry) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 16,
-                    height: 16,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 3))]),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Row(children: [
+          Icon(Icons.grid_on_rounded, color: Color(0xFF7C4DFF), size: 20),
+          SizedBox(width: 8),
+          Text('บันทึกสัปดาห์นี้', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF2D1B69))),
+        ]),
+        const SizedBox(height: 14),
+        Row(
+          children: List.generate(7, (i) {
+            final count = counts[i];
+            final intensity = count / effMax;
+            final isToday = i == now.weekday - 1;
+            String? emoji;
+            if (dayEntries[i].isNotEmpty) {
+              final mc = <String, int>{};
+              for (final e in dayEntries[i]) { mc[e['mood']] = (mc[e['mood']] ?? 0) + 1; }
+              final dom = mc.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+              emoji = _moodEmojis[dom];
+            }
+            return Expanded(
+              child: GestureDetector(
+                onTap: count > 0 ? () => _showDayDetail(dayEntries[i], start.add(Duration(days: i))) : null,
+                child: Column(children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: entry.value,
-                      borderRadius: BorderRadius.circular(4),
+                      color: count > 0
+                          ? Color.lerp(const Color(0xFFD4C4FF), const Color(0xFF7C4DFF), intensity)
+                          : const Color(0xFFEEE8FF),
+                      borderRadius: BorderRadius.circular(12),
+                      border: isToday ? Border.all(color: const Color(0xFF7C4DFF), width: 2) : null,
+                      boxShadow: count > 0
+                          ? [BoxShadow(color: const Color(0xFF7C4DFF).withOpacity(0.18 * intensity), blurRadius: 6)]
+                          : null,
+                    ),
+                    child: Center(
+                      child: count > 0
+                          ? Column(mainAxisSize: MainAxisSize.min, children: [
+                              if (emoji != null) Text(emoji, style: const TextStyle(fontSize: 16)),
+                              Text('$count', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800,
+                                color: intensity > 0.5 ? Colors.white : const Color(0xFF7C4DFF))),
+                            ])
+                          : const SizedBox.shrink(),
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Text(
-                    entry.key,
-                    style: TextStyle(fontSize: 11, color: Color(0xFF78909C)),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // การ์ดการกระจายของอารมณ์
-  Widget _buildMoodDistributionCard() {
-    final distribution = _calculateMoodDistribution();
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.pie_chart_rounded, color: Color(0xFF9C27B0), size: 22),
-              SizedBox(width: 8),
-              Text(
-                'สัดส่วนอารมณ์',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF37474F),
-                ),
+                  const SizedBox(height: 5),
+                  Text(dayLabels[i], style: TextStyle(fontSize: 11,
+                    fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                    color: isToday ? const Color(0xFF7C4DFF) : const Color(0xFF9E9E9E))),
+                ]),
               ),
-            ],
-          ),
-          SizedBox(height: 16),
-          ...distribution.entries.map((entry) {
-            return _buildMoodBar(
-              entry.key,
-              entry.value['count'],
-              entry.value['percentage'],
-              moodColors[entry.key] ?? Colors.grey,
             );
           }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMoodBar(String mood, int count, double percentage, Color color) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Text(moodEmojis[mood] ?? '', style: TextStyle(fontSize: 18)),
-                  SizedBox(width: 8),
-                  Text(
-                    mood,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF37474F),
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '${percentage.toStringAsFixed(0)}% ($count วัน)',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF78909C),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 6),
-          Stack(
-            children: [
-              Container(
-                height: 8,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: percentage / 100,
-                child: Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [color, color.withOpacity(0.7)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // การ์ด Insights
-  Widget _buildInsightsCard() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFE1F5FE), Color(0xFFB3E5FC)],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFF03A9F4).withOpacity(0.2),
-            blurRadius: 15,
-            offset: Offset(0, 5),
+        const SizedBox(height: 14),
+        Row(children: [
+          Container(width: 14, height: 14,
+            decoration: BoxDecoration(color: const Color(0xFFEEE8FF), borderRadius: BorderRadius.circular(4))),
+          const SizedBox(width: 5),
+          const Text('ไม่มีบันทึก', style: TextStyle(fontSize: 11, color: Color(0xFFAAAAAA))),
+          const SizedBox(width: 14),
+          Container(width: 14, height: 14,
+            decoration: BoxDecoration(color: const Color(0xFF7C4DFF), borderRadius: BorderRadius.circular(4))),
+          const SizedBox(width: 5),
+          const Text('บันทึกมาก', style: TextStyle(fontSize: 11, color: Color(0xFFAAAAAA))),
+          const Spacer(),
+          GestureDetector(
+            onTap: _showMonthHeatmap,
+            child: const Text('ดูรายเดือน →', style: TextStyle(fontSize: 12, color: Color(0xFF7C4DFF), fontWeight: FontWeight.w600)),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.lightbulb_rounded,
-                  color: Color(0xFFFFB300),
-                  size: 22,
-                ),
-              ),
-              SizedBox(width: 10),
-              Text(
-                'ข้อสังเกต',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF01579B),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildInsightItem(
-            Icons.trending_up_rounded,
-            'คุณบันทึกความรู้สึกสม่ำเสมอมากขึ้น',
-            Color(0xFF66BB6A),
-          ),
-          SizedBox(height: 12),
-          _buildInsightItem(
-            Icons.wb_sunny_rounded,
-            'อารมณ์ดีมากในช่วงเช้า',
-            Color(0xFFFFB300),
-          ),
-          SizedBox(height: 12),
-          _buildInsightItem(
-            Icons.self_improvement_rounded,
-            'ลองทำกิจกรรมผ่อนคลายเมื่อรู้สึกเครียด',
-            Color(0xFFBA68C8),
-          ),
-        ],
+        ]),
+      ]),
+    );
+  }
+
+  void _showDayDetail(List<Map<String, dynamic>> entries, DateTime date) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
+        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 36, height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 14),
+            Text('${date.day}/${date.month}/${date.year}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2D1B69))),
+            const SizedBox(height: 12),
+            ...entries.map((e) {
+              final c = _moodColors[e['mood']] ?? Colors.grey;
+              final emoji = _moodEmojis[e['mood']] ?? '';
+              final label = _moodThLabels[e['mood']] ?? e['mood'];
+              final ts = e['timestamp'] as DateTime;
+              final score = moodScoreMap[e['mood']] ?? 3;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(children: [
+                  Text(emoji, style: const TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(label, style: TextStyle(fontWeight: FontWeight.w700, color: c, fontSize: 14)),
+                    if ((e['note'] as String).isNotEmpty)
+                      Text(e['note'], style: const TextStyle(fontSize: 12, color: Color(0xFF777777))),
+                  ])),
+                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    Text('$score/5', style: TextStyle(fontWeight: FontWeight.w700, color: c)),
+                    Text('${ts.hour.toString().padLeft(2,'0')}:${ts.minute.toString().padLeft(2,'0')} น.',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFFAAAAAA))),
+                  ]),
+                ]),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildInsightItem(IconData icon, String text, Color color) {
-    return Row(
-      children: [
-        Container(
-          padding: EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: color, size: 18),
-        ),
-        SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF37474F),
-              height: 1.3,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // คำนวณสรุปอารมณ์
-  Map<String, dynamic> _calculateMoodSummary() {
+  void _showMonthHeatmap() {
     final now = DateTime.now();
-    final startDate = selectedView == 'week'
-        ? now.subtract(Duration(days: 7))
-        : DateTime(now.year, now.month, 1);
-
-    final relevantMoods = moodHistory.entries.where((entry) {
-      return entry.key.isAfter(startDate) ||
-          entry.key.isAtSameMomentAs(startDate);
-    });
-
-    final totalDays = relevantMoods.length;
-    final goodMoods = ['มีความสุขมาก', 'มีความสุข', 'ปกติ'];
-    final goodMoodCount = relevantMoods
-        .where((entry) => goodMoods.contains(entry.value['mood']))
-        .length;
-
-    // หาอารมณ์ที่พบบ่อยที่สุด
-    final moodCount = <String, int>{};
-    for (var entry in relevantMoods) {
-      final mood = entry.value['mood'] as String;
-      moodCount[mood] = (moodCount[mood] ?? 0) + 1;
-    }
-
-    String dominantMood = 'ปกติ';
-    int maxCount = 0;
-    moodCount.forEach((mood, count) {
-      if (count > maxCount) {
-        maxCount = count;
-        dominantMood = mood;
-      }
-    });
-
-    return {
-      'totalDays': totalDays,
-      'goodMoodPercentage': totalDays > 0
-          ? ((goodMoodCount / totalDays) * 100).toInt()
-          : 0,
-      'dominantMood': dominantMood,
-      'dominantEmoji': moodEmojis[dominantMood] ?? '😐',
-      'dominantColor': moodColors[dominantMood] ?? Colors.grey,
-    };
-  }
-
-  // คำนวณการกระจายของอารมณ์
-  Map<String, Map<String, dynamic>> _calculateMoodDistribution() {
-    final now = DateTime.now();
-    final startDate = selectedView == 'week'
-        ? now.subtract(Duration(days: 7))
-        : DateTime(now.year, now.month, 1);
-
-    final relevantMoods = moodHistory.entries.where((entry) {
-      return entry.key.isAfter(startDate) ||
-          entry.key.isAtSameMomentAs(startDate);
-    });
-
-    final totalDays = relevantMoods.length;
-    final moodCount = <String, int>{};
-
-    for (var entry in relevantMoods) {
-      final mood = entry.value['mood'] as String;
-      moodCount[mood] = (moodCount[mood] ?? 0) + 1;
-    }
-
-    final distribution = <String, Map<String, dynamic>>{};
-    moodCount.forEach((mood, count) {
-      distribution[mood] = {
-        'count': count,
-        'percentage': totalDays > 0 ? (count / totalDays) * 100 : 0,
-      };
-    });
-
-    // เรียงจากมากไปน้อย
-    final sortedEntries = distribution.entries.toList()
-      ..sort((a, b) => b.value['count'].compareTo(a.value['count']));
-
-    return Map.fromEntries(sortedEntries);
-  }
-
-  // แสดงรายละเอียดอารมณ์
-  void _showMoodDetail(DateTime date, Map<String, dynamic> mood) {
+    final firstDay = DateTime(now.year, now.month, 1);
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final startWeekday = firstDay.weekday - 1;
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (_) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                moodColors[mood['mood']]!.withOpacity(0.1),
-                Colors.white,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                moodEmojis[mood['mood']] ?? '',
-                style: TextStyle(fontSize: 48),
-              ),
-              SizedBox(height: 12),
-              Text(
-                mood['mood'],
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF37474F),
+              Text('${_thMonth(now.month)} ${now.year + 543}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2D1B69))),
+              const SizedBox(height: 14),
+              Row(children: ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'].map((d) =>
+                Expanded(child: Center(child: Text(d, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF9E9E9E)))))).toList()),
+              const SizedBox(height: 6),
+              _monthGrid(now, daysInMonth, startWeekday),
+              const SizedBox(height: 14),
+              Center(child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                  decoration: BoxDecoration(color: const Color(0xFF7C4DFF), borderRadius: BorderRadius.circular(20)),
+                  child: const Text('ปิด', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                 ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                DateFormat('d MMMM yyyy', 'th').format(date),
-                style: TextStyle(fontSize: 14, color: Color(0xFF78909C)),
-              ),
-              SizedBox(height: 16),
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 18,
-                      color: Color(0xFF78909C),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'เวลา: ${mood['time'].hour.toString().padLeft(2, '0')}:${mood['time'].minute.toString().padLeft(2, '0')} น.',
-                      style: TextStyle(fontSize: 13, color: Color(0xFF37474F)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: moodColors[mood['mood']],
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'ปิด',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
+              )),
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _monthGrid(DateTime now, int daysInMonth, int startWeekday) {
+    final cells = <Widget>[];
+    for (int i = 0; i < startWeekday; i++) cells.add(const SizedBox());
+    for (int d = 1; d <= daysInMonth; d++) {
+      final date = DateTime(now.year, now.month, d);
+      final dayEntries = _entries.where((e) {
+        final ts = e['timestamp'] as DateTime;
+        return ts.year == date.year && ts.month == date.month && ts.day == date.day;
+      }).toList();
+      final hasEntry = dayEntries.isNotEmpty;
+      final isToday = d == now.day;
+      String? emoji;
+      Color cellColor = const Color(0xFFEEE8FF);
+      if (hasEntry) {
+        final mc = <String, int>{};
+        for (final e in dayEntries) { mc[e['mood']] = (mc[e['mood']] ?? 0) + 1; }
+        final dom = mc.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+        emoji = _moodEmojis[dom];
+        cellColor = (_moodColors[dom] ?? const Color(0xFF7C4DFF)).withOpacity(0.7);
+      }
+      cells.add(GestureDetector(
+        onTap: hasEntry ? () { Navigator.pop(context); _showDayDetail(dayEntries, date); } : null,
+        child: Container(
+          margin: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: cellColor, borderRadius: BorderRadius.circular(8),
+            border: isToday ? Border.all(color: const Color(0xFF7C4DFF), width: 2) : null,
+          ),
+          child: Center(
+            child: hasEntry && emoji != null
+                ? Text(emoji, style: const TextStyle(fontSize: 15))
+                : Text('$d', style: TextStyle(fontSize: 10,
+                    fontWeight: isToday ? FontWeight.w800 : FontWeight.normal,
+                    color: isToday ? const Color(0xFF7C4DFF) : const Color(0xFFCCCCCC))),
+          ),
+        ),
+      ));
+    }
+    return GridView.count(crossAxisCount: 7, shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(), childAspectRatio: 1, children: cells);
+  }
+
+  String _thMonth(int m) {
+    const months = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    return months[m];
+  }
+
+  // ══════════════════════════════════════
+  //  DISTRIBUTION — Donut Chart
+  // ══════════════════════════════════════
+
+  Widget _distributionSection() {
+    final mc = _moodCounts;
+    if (mc.isEmpty) return const SizedBox.shrink();
+    final total = _entries.length;
+    final sorted = mc.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final dom = _dominantMood;
+
+    // รวบรวม data สำหรับ chart
+    final chartData = sorted.map((e) => _DonutSlice(
+      mood: e.key,
+      count: e.value,
+      pct: e.value / total,
+      color: _moodColors[e.key] ?? Colors.grey,
+      emoji: _moodEmojis[e.key] ?? '',
+      label: _moodThLabels[e.key] ?? e.key,
+    )).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Header ──
+          const Row(children: [
+            Icon(Icons.donut_large_rounded, color: Color(0xFF7C4DFF), size: 20),
+            SizedBox(width: 8),
+            Text('สัดส่วนอารมณ์', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF2D1B69))),
+          ]),
+
+          const SizedBox(height: 24),
+
+          // ── Donut Chart + Legend ──
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Chart
+              SizedBox(
+                width: 150,
+                height: 150,
+                child: Stack(alignment: Alignment.center, children: [
+                  CustomPaint(
+                    size: const Size(150, 150),
+                    painter: _DonutChartPainter(slices: chartData),
+                  ),
+                  // ── ตรงกลาง: อารมณ์ที่พบบ่อยสุด ──
+                  Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(
+                      dom != null ? (_moodEmojis[dom] ?? '') : '—',
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                    Text(
+                      dom != null ? (_moodThLabels[dom] ?? '') : '',
+                      style: const TextStyle(fontSize: 10, color: Color(0xFF888888), fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      'บ่อยสุด',
+                      style: TextStyle(fontSize: 9, color: Colors.grey[400]),
+                    ),
+                  ]),
+                ]),
+              ),
+
+              const SizedBox(width: 20),
+
+              // Legend
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: chartData.map((slice) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(children: [
+                      // สี
+                      Container(
+                        width: 12, height: 12,
+                        decoration: BoxDecoration(
+                          color: slice.color,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // emoji + ชื่อ
+                      Text(slice.emoji, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(slice.label,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF444444), fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // เปอร์เซ็นต์
+                      Text(
+                        '${(slice.pct * 100).round()}%',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: slice.color),
+                      ),
+                    ]),
+                  )).toList(),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+          const Divider(height: 1, color: Color(0xFFF0ECFF)),
+          const SizedBox(height: 16),
+
+          // ── Summary bar ที่ด้านล่าง ──
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              height: 16,
+              child: Row(
+                children: chartData.map((slice) => Flexible(
+                  flex: (slice.pct * 1000).round(),
+                  child: Tooltip(
+                    message: '${slice.label} ${(slice.pct * 100).round()}%',
+                    child: Container(color: slice.color),
+                  ),
+                )).toList(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: Text(
+              'บันทึกทั้งหมด $total ครั้ง',
+              style: const TextStyle(fontSize: 12, color: Color(0xFFAAAAAA)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════
+//  Data model สำหรับ Donut
+// ══════════════════════════════════════
+
+class _DonutSlice {
+  final String mood;
+  final int count;
+  final double pct;
+  final Color color;
+  final String emoji;
+  final String label;
+
+  const _DonutSlice({
+    required this.mood,
+    required this.count,
+    required this.pct,
+    required this.color,
+    required this.emoji,
+    required this.label,
+  });
+}
+
+// ══════════════════════════════════════
+//  CustomPainter: Donut Chart
+// ══════════════════════════════════════
+
+class _DonutChartPainter extends CustomPainter {
+  final List<_DonutSlice> slices;
+
+  const _DonutChartPainter({required this.slices});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final outerR = size.width / 2;
+    final innerR = outerR * 0.54; // ความหนาวงแหวน
+    final gap = 0.03; // ช่องว่างระหว่าง slice (radian)
+
+    double startAngle = -3.14159 / 2; // เริ่มจากบน
+
+    for (final slice in slices) {
+      if (slice.pct <= 0) continue;
+      final sweep = 2 * 3.14159 * slice.pct - gap;
+
+      final paint = Paint()
+        ..color = slice.color
+        ..style = PaintingStyle.fill
+        ..isAntiAlias = true;
+
+      final path = Path();
+      // วาด arc ด้านนอก
+      final outerRect = Rect.fromCircle(center: Offset(cx, cy), radius: outerR);
+      final innerRect = Rect.fromCircle(center: Offset(cx, cy), radius: innerR);
+
+      path.arcTo(outerRect, startAngle, sweep, true);
+      path.arcTo(innerRect, startAngle + sweep, -sweep, false);
+      path.close();
+
+      canvas.drawPath(path, paint);
+
+      startAngle += sweep + gap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DonutChartPainter oldDelegate) => oldDelegate.slices != slices;
 }

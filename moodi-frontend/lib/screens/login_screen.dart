@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart'; 
 
 class LoginScreen extends StatefulWidget {
@@ -47,6 +48,17 @@ class _LoginScreenState extends State<LoginScreen> {
     debugPrint('[LOGIN RESULT] $result');
 
     if (result['success'] == true) {
+      final user = result['user'];
+     // ⭐⭐ เพิ่มตรงนี้ ⭐⭐
+       if (user != null) {
+       final prefs = await SharedPreferences.getInstance();
+       await prefs.setInt(
+      'user_id',
+      user['user_id'] is int
+          ? user['user_id']
+          : int.parse(user['user_id'].toString()),
+       );
+  }
       _showSnack(
         result['message'] ?? 'เข้าสู่ระบบสำเร็จ',
         color: Colors.green,
