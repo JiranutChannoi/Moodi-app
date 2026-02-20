@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'phq9_test_screen.dart';
-import 'api_service.dart';
+import '../services/api_service.dart';
 
 class PHQ9ResultScreen extends StatefulWidget {
   final int score;
