@@ -86,7 +86,7 @@ class _AIChatScreenState extends State<AIChatScreen>
   Future<String> getAIResponseFromAPI(String message) async {
     try {
       final response = await http.post(
-        Uri.parse("http://YOUR_BACKEND_URL/chat"),
+        Uri.parse("https://moodi-production.up.railway.app"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"user_id": 1, "message": message}),
       );
