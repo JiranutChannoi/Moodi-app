@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AIChatScreen extends StatefulWidget {
   const AIChatScreen({Key? key}) : super(key: key);
@@ -51,7 +53,7 @@ class _AIChatScreenState extends State<AIChatScreen>
     return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
   }
 
-  void _sendMessage(String message) {
+  void _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
     setState(() {
@@ -65,41 +67,39 @@ class _AIChatScreenState extends State<AIChatScreen>
     _messageController.clear();
     _scrollToBottom();
 
-    // จำลองการพิมพ์ของ AI
-    Future.delayed(Duration(milliseconds: 800), () {
-      setState(() {
-        _messages.add({
-          'text': _getAIResponse(message),
-          'isUser': false,
-          'time': _getCurrentTime(),
-        });
+    // จำลองการพิมพ์ AI
+    await Future.delayed(Duration(milliseconds: 500));
+
+    String reply = await getAIResponseFromAPI(message);
+
+    setState(() {
+      _messages.add({
+        'text': reply,
+        'isUser': false,
+        'time': _getCurrentTime(),
       });
-      _scrollToBottom();
     });
+
+    _scrollToBottom();
   }
 
-  String _getAIResponse(String message) {
-    final lowerMessage = message.toLowerCase();
+  Future<String> getAIResponseFromAPI(String message) async {
+    try {
+      final response = await http.post(
+        Uri.parse("http://YOUR_BACKEND_URL/chat"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": 1, "message": message}),
+      );
 
-    if (lowerMessage.contains('เหนื่อย') || lowerMessage.contains('เครียด')) {
-      return 'เข้าใจความรู้สึกของคุณค่ะ 💙 การรู้สึกเหนื่อยเป็นเรื่องปกติ ลองหยุดพักสักครู่ หายใจลึกๆ และทำกิจกรรมที่ชอบดูนะคะ';
-    } else if (lowerMessage.contains('ผ่อนคลาย')) {
-      return 'วิธีการผ่อนคลายที่ดี:\n✨ ฟังเพลงเบาๆ\n✨ ทำสมาธิ 5-10 นาที\n✨ เดินเล่นกลางแจ้ง\n✨ ฟังเสียงธรรมชาติ\nลองดูนะคะ! 🌿';
-    } else if (lowerMessage.contains('สวัสดี') ||
-        lowerMessage.contains('หวัดดี') ||
-        lowerMessage.contains('ดีจ้า')) {
-      return 'สวัสดีค่ะ! 😊 วันนี้เป็นอย่างไรบ้างคะ? ยินดีที่ได้พูดคุยกับคุณ';
-    } else if (lowerMessage.contains('ขอบคุณ') ||
-        lowerMessage.contains('แซงคิว')) {
-      return 'ยินดีค่ะ! 💜 หวังว่าจะช่วยให้คุณรู้สึกดีขึ้นนะคะ อย่าลืมดูแลตัวเองด้วยนะ';
-    } else if (lowerMessage.contains('เศร้า') ||
-        lowerMessage.contains('เหงา')) {
-      return 'ฉันเข้าใจความรู้สึกของคุณค่ะ 🤗 ทุกความรู้สึกเป็นเรื่องปกติ ลองพูดคุยกับคนใกล้ชิดหรือทำกิจกรรมที่ชอบดูนะคะ';
-    } else if (lowerMessage.contains('เคล็ดลับ') ||
-        lowerMessage.contains('แนะนำ')) {
-      return 'เคล็ดลับดูแลสุขภาพจิต:\n🌟 นอนหับพักผ่อนเพียงพอ\n🌟 ออกกำลังกายสม่ำเสมอ\n🌟 กินอาหารมีประโยชน์\n🌟 หาเวลาทำสิ่งที่รัก\n🌟 พูดคุยกับคนที่เข้าใจ';
-    } else {
-      return 'ขอบคุณที่แบ่งปันความรู้สึกนะคะ 💜 ฉันเข้าใจและพร้อมรับฟังเสมอ หากต้องการคำแนะนำเพิ่มเติม บอกฉันได้เลยนะคะ 😊';
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        return data["reply"] ?? "ฉันอยู่ตรงนี้เพื่อฟังคุณนะ 💜";
+      } else {
+        return "เกิดข้อผิดพลาดเล็กน้อย ลองใหม่อีกครั้งนะ";
+      }
+    } catch (e) {
+      return "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
     }
   }
 

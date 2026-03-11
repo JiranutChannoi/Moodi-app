@@ -7,23 +7,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SeverityLevel {
+  normal
+  warning
+  crisis
+}
+
+
 model User {
   id                    Int                     @id(map: "user_pkey") @default(autoincrement()) @map("user_id")
   name                  String                  @db.VarChar(100)
   email                 String                  @unique(map: "user_email_key") @db.VarChar(100)
   passwordHash          String                  @map("password") @db.VarChar(255)
   password_reset_tokens password_reset_tokens[]
+  chats                 chatai[]
 
   @@map("users")
 }
 
 model chatai {
-  chat_id   Int       @id @default(autoincrement())
-  user_id   Int?
-  message   String?
-  response  String?
-  timestamp DateTime? @default(now()) @db.Timestamp(6)
+  chat_id    Int            @id @default(autoincrement())
+  user_id    Int
+  message    String         @db.Text
+  response   String         @db.Text
+  severity   SeverityLevel  @default(normal)
+  risk_flag  Boolean        @default(false)
+  created_at DateTime       @default(now())
+
+  user       User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([severity])
 }
+
 
 model diaryentries {
   entry_id Int     @id @default(autoincrement())
@@ -35,10 +51,17 @@ model diaryentries {
 }
 
 model keywordreplies {
-  keyword_id Int     @id @default(autoincrement())
-  keyword    String? @unique @db.VarChar(50)
-  response   String?
+  keyword_id  Int            @id @default(autoincrement())
+  keyword     String         @unique @db.VarChar(50)
+  response    String         @db.Text
+  severity    SeverityLevel  @default(normal)
+  is_active   Boolean        @default(true)
+  created_at  DateTime       @default(now())
+
+  @@index([severity])
+  @@index([is_active])
 }
+
 
 model mood {
   mood_id   Int       @id @default(autoincrement())

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart'; // ✅ เพิ่ม
 
 class RelaxationScreen extends StatefulWidget {
   const RelaxationScreen({Key? key}) : super(key: key);
@@ -9,7 +10,22 @@ class RelaxationScreen extends StatefulWidget {
 }
 
 class _RelaxationScreenState extends State<RelaxationScreen> {
-  // รายการเสียงธรรมชาติ
+  // ✅ เพิ่ม Audio Player
+  final AudioPlayer _player = AudioPlayer();
+
+  // ✅ เพิ่ม map id -> URL (จาก Cloudinary)
+  final Map<String, String> soundUrls = {
+    'rain':
+        'https://res.cloudinary.com/ddabbgr28/video/upload/v1770704042/Rain_yet4tv.mp3',
+    'forest':
+        'https://res.cloudinary.com/ddabbgr28/video/upload/v1770704099/Forest_Birds_l3cdh0.mp3',
+    'ocean':
+        'https://res.cloudinary.com/ddabbgr28/video/upload/v1770704109/Ocean_Waves_t03is8.wav',
+    'wind':
+        'https://res.cloudinary.com/ddabbgr28/video/upload/v1770704212/wind_i2om0j.wav',
+  };
+
+  // รายการเสียงธรรมชาติ (คงของเดิม 100%)
   final List<Map<String, dynamic>> soundList = [
     {
       'id': 'rain',
@@ -52,10 +68,12 @@ class _RelaxationScreenState extends State<RelaxationScreen> {
   @override
   void dispose() {
     countdownTimer?.cancel();
+    _player.dispose(); // ✅ เพิ่ม
     super.dispose();
   }
 
-  void startTimer() {
+  // ✅ แก้ startTimer ให้เล่นเสียงจาก URL
+  void startTimer() async {
     if (selectedSound == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -64,6 +82,12 @@ class _RelaxationScreenState extends State<RelaxationScreen> {
         ),
       );
       return;
+    }
+
+    // ✅ เล่นเสียง
+    final url = soundUrls[selectedSound];
+    if (url != null) {
+      await _player.play(UrlSource(url));
     }
 
     setState(() {
@@ -82,8 +106,11 @@ class _RelaxationScreenState extends State<RelaxationScreen> {
     });
   }
 
+  // ✅ แก้ stopTimer ให้หยุดเสียง
   void stopTimer() {
     countdownTimer?.cancel();
+    _player.stop(); // ✅ เพิ่ม
+
     setState(() {
       isPlaying = false;
       remainingSeconds = 0;
@@ -102,6 +129,8 @@ class _RelaxationScreenState extends State<RelaxationScreen> {
     int secs = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
+
+  // UI
 
   @override
   Widget build(BuildContext context) {
