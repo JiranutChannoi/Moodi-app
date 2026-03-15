@@ -17,12 +17,9 @@ const pool = new Pool({
 // ================= RESEND CONFIG =================
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-
-
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
   try {
-
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -63,21 +60,16 @@ router.post("/register", async (req, res) => {
     });
 
   } catch (e) {
-
     console.error("REGISTER ERROR:", e);
 
     res.status(500).json({
       error: "Server error",
     });
-
   }
 });
 
-
-
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
-
   try {
 
     const { email, password } = req.body;
@@ -122,18 +114,13 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (e) {
-
     console.error("LOGIN ERROR:", e);
 
     res.status(500).json({
       error: "Server error",
     });
-
   }
-
 });
-
-
 
 // ================= FORGOT PASSWORD =================
 router.post("/forgot-password", async (req, res) => {
@@ -179,12 +166,14 @@ router.post("/forgot-password", async (req, res) => {
     const resetLink =
       `https://moodi-reset-password.vercel.app/?token=${token}`;
 
-    console.log("📩 Sending email to:", email);
+    console.log("Sending email to:", email);
 
-    await resend.emails.send({
+    const data = await resend.emails.send({
 
-      from: "Moodi <onboarding@resend.dev>",
+      from: "Moodi App <onboarding@resend.dev>",
+
       to: email,
+
       subject: "รีเซ็ตรหัสผ่าน Moodi",
 
       html: `
@@ -209,10 +198,9 @@ router.post("/forgot-password", async (req, res) => {
 
       </div>
       `,
-
     });
 
-    console.log("✅ Email sent");
+    console.log("EMAIL RESPONSE:", data);
 
     res.json({
       message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว",
@@ -229,8 +217,6 @@ router.post("/forgot-password", async (req, res) => {
   }
 
 });
-
-
 
 // ================= RESET PASSWORD =================
 router.post("/reset-password", async (req, res) => {
@@ -292,6 +278,57 @@ router.post("/reset-password", async (req, res) => {
 
 });
 
+// ================= CHANGE PASSWORD =================
+router.post("/change-password", async (req, res) => {
 
+  try {
+
+    const { user_id, oldPassword, newPassword } = req.body;
+
+    const user = await pool.query(
+      "SELECT * FROM users WHERE user_id=$1",
+      [user_id]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({
+        error: "ไม่พบผู้ใช้",
+      });
+    }
+
+    const match = await bcrypt.compare(
+      oldPassword,
+      user.rows[0].password
+    );
+
+    if (!match) {
+      return res.status(401).json({
+        error: "รหัสผ่านเดิมไม่ถูกต้อง",
+      });
+    }
+
+    const hash = await bcrypt.hash(
+      newPassword,
+      10
+    );
+
+    await pool.query(
+      "UPDATE users SET password=$1 WHERE user_id=$2",
+      [hash, user_id]
+    );
+
+    res.json({
+      message: "เปลี่ยนรหัสผ่านสำเร็จ",
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: "server error",
+    });
+
+  }
+
+});
 
 module.exports = router;
