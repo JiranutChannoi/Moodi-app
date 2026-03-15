@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 const { Pool } = require("pg");
+const { Resend } = require("resend");
 
 // ================= DATABASE =================
 const pool = new Pool({
@@ -14,34 +14,15 @@ const pool = new Pool({
       : false,
 });
 
-// ================= EMAIL CONFIG =================
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
-// ตรวจสอบ email server
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("❌ Email server error:", error);
-  } else {
-    console.log("✅ Email server ready");
-  }
-});
+// ================= RESEND CONFIG =================
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
   try {
+
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -80,12 +61,15 @@ router.post("/register", async (req, res) => {
       message: "สมัครสมาชิกสำเร็จ",
       user: result.rows[0],
     });
+
   } catch (e) {
+
     console.error("REGISTER ERROR:", e);
 
     res.status(500).json({
       error: "Server error",
     });
+
   }
 });
 
@@ -93,7 +77,9 @@ router.post("/register", async (req, res) => {
 
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
+
   try {
+
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -134,20 +120,26 @@ router.post("/login", async (req, res) => {
         email: user.email,
       },
     });
+
   } catch (e) {
+
     console.error("LOGIN ERROR:", e);
 
     res.status(500).json({
       error: "Server error",
     });
+
   }
+
 });
 
 
 
 // ================= FORGOT PASSWORD =================
 router.post("/forgot-password", async (req, res) => {
+
   try {
+
     const { email } = req.body;
 
     const user = await pool.query(
@@ -189,53 +181,62 @@ router.post("/forgot-password", async (req, res) => {
 
     console.log("📩 Sending email to:", email);
 
-    const info = await transporter.sendMail({
-      from: `"Moodi App" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+
+      from: "Moodi <onboarding@resend.dev>",
       to: email,
       subject: "รีเซ็ตรหัสผ่าน Moodi",
+
       html: `
-        <div style="font-family:sans-serif">
+      <div style="font-family:sans-serif">
 
-        <h2>รีเซ็ตรหัสผ่าน</h2>
+      <h2>รีเซ็ตรหัสผ่าน</h2>
 
-        <p>คุณได้ขอรีเซ็ตรหัสผ่านสำหรับบัญชี Moodi</p>
+      <p>คุณได้ขอรีเซ็ตรหัสผ่านสำหรับบัญชี Moodi</p>
 
-        <a href="${resetLink}"
-        style="
-        padding:12px 20px;
-        background:#7B68EE;
-        color:white;
-        text-decoration:none;
-        border-radius:6px;
-        display:inline-block;">
-        รีเซ็ตรหัสผ่าน
-        </a>
+      <a href="${resetLink}"
+      style="
+      padding:12px 20px;
+      background:#7B68EE;
+      color:white;
+      text-decoration:none;
+      border-radius:6px;
+      display:inline-block;">
+      รีเซ็ตรหัสผ่าน
+      </a>
 
-        <p>ลิงก์นี้จะหมดอายุภายใน 30 นาที</p>
+      <p>ลิงก์นี้จะหมดอายุภายใน 30 นาที</p>
 
-        </div>
+      </div>
       `,
+
     });
 
-    console.log("✅ Email sent:", info.messageId);
+    console.log("✅ Email sent");
 
     res.json({
       message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว",
     });
+
   } catch (err) {
+
     console.error("FORGOT PASSWORD ERROR:", err);
 
     res.status(500).json({
       error: "server error",
     });
+
   }
+
 });
 
 
 
 // ================= RESET PASSWORD =================
 router.post("/reset-password", async (req, res) => {
+
   try {
+
     const { token, password } = req.body;
 
     const tokenHash = crypto
@@ -280,64 +281,15 @@ router.post("/reset-password", async (req, res) => {
     res.json({
       message: "รีเซ็ตรหัสผ่านสำเร็จ",
     });
+
   } catch (err) {
+
     res.status(500).json({
       error: "server error",
     });
+
   }
-});
 
-
-
-// ================= CHANGE PASSWORD =================
-router.post("/change-password", async (req, res) => {
-  try {
-    const {
-      user_id,
-      oldPassword,
-      newPassword,
-    } = req.body;
-
-    const user = await pool.query(
-      "SELECT * FROM users WHERE user_id=$1",
-      [user_id]
-    );
-
-    if (user.rows.length === 0) {
-      return res.status(404).json({
-        error: "ไม่พบผู้ใช้",
-      });
-    }
-
-    const match = await bcrypt.compare(
-      oldPassword,
-      user.rows[0].password
-    );
-
-    if (!match) {
-      return res.status(401).json({
-        error: "รหัสผ่านเดิมไม่ถูกต้อง",
-      });
-    }
-
-    const hash = await bcrypt.hash(
-      newPassword,
-      10
-    );
-
-    await pool.query(
-      "UPDATE users SET password=$1 WHERE user_id=$2",
-      [hash, user_id]
-    );
-
-    res.json({
-      message: "เปลี่ยนรหัสผ่านสำเร็จ",
-    });
-  } catch (err) {
-    res.status(500).json({
-      error: "server error",
-    });
-  }
 });
 
 
