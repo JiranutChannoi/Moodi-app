@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -12,9 +13,17 @@ const pool = new Pool({
       : false,
 });
 
+// ================= EMAIL CONFIG =================
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 
-// REGISTER
+// ================= REGISTER =================
 router.post('/register', async (req, res) => {
   try {
 
@@ -70,7 +79,7 @@ router.post('/register', async (req, res) => {
 
 
 
-//LOGIN
+// ================= LOGIN =================
 router.post('/login', async (req, res) => {
 
   try {
@@ -130,7 +139,7 @@ router.post('/login', async (req, res) => {
 
 
 
-//FORGOT PASSWORD
+// ================= FORGOT PASSWORD =================
 router.post('/forgot-password', async (req, res) => {
 
   try {
@@ -170,9 +179,30 @@ router.post('/forgot-password', async (req, res) => {
       [userId, tokenHash, expire]
     );
 
+    // reset link
+    const resetLink =
+      `https://moodi-reset-password.vercel.app/?token=${token}`;
+
+    // send email
+    await transporter.sendMail({
+      from: `"Moodi App" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'รีเซ็ตรหัสผ่าน Moodi',
+      html: `
+        <h2>รีเซ็ตรหัสผ่าน</h2>
+
+        <p>คุณได้ขอรีเซ็ตรหัสผ่านสำหรับบัญชี Moodi</p>
+
+        <a href="${resetLink}">
+          กดที่นี่เพื่อเปลี่ยนรหัสผ่าน
+        </a>
+
+        <p>ลิงก์นี้จะหมดอายุภายใน 30 นาที</p>
+      `
+    });
+
     res.json({
-      message: 'สร้าง token รีเซ็ตรหัสผ่านแล้ว',
-      reset_token: token
+      message: 'ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว'
     });
 
   } catch (err) {
@@ -189,7 +219,7 @@ router.post('/forgot-password', async (req, res) => {
 
 
 
-//RESET PASSWORD
+// ================= RESET PASSWORD =================
 router.post('/reset-password', async (req, res) => {
 
   try {
@@ -251,7 +281,7 @@ router.post('/reset-password', async (req, res) => {
 
 
 
-//CHANGE PASSWORD
+// ================= CHANGE PASSWORD =================
 router.post('/change-password', async (req, res) => {
 
   try {
