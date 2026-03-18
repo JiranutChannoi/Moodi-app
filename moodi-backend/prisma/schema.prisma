@@ -15,12 +15,11 @@ enum SeverityLevel {
 
 
 model User {
-  id                    Int                     @id(map: "user_pkey") @default(autoincrement()) @map("user_id")
-  name                  String                  @db.VarChar(100)
-  email                 String                  @unique(map: "user_email_key") @db.VarChar(100)
-  passwordHash          String                  @map("password") @db.VarChar(255)
-  password_reset_tokens password_reset_tokens[]
-  chats                 chatai[]
+  id           Int      @id(map: "user_pkey") @default(autoincrement()) @map("user_id")
+  name         String   @db.VarChar(100)
+  email        String   @unique(map: "user_email_key") @db.VarChar(100)
+  passwordHash String   @map("password") @db.VarChar(255)
+  chats        chatai[]
 
   @@map("users")
 }
@@ -71,15 +70,6 @@ model mood {
   timestamp DateTime? @default(now()) @db.Timestamp(6)
 }
 
-model password_reset_tokens {
-  id         Int       @id @default(autoincrement())
-  user_id    Int
-  token_hash String
-  expires_at DateTime  @db.Timestamptz(6)
-  used_at    DateTime? @db.Timestamptz(6)
-  created_at DateTime  @default(now()) @db.Timestamptz(6)
-  users      User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-}
 
 model quizresults {
   quiz_id     Int       @id @default(autoincrement())
@@ -96,3 +86,11 @@ model relaxsound {
   audio_url String? @db.VarChar(255)
 }
 
+model OtpCode {
+  id         Int      @id @default(autoincrement())
+  email      String
+  code       String
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}

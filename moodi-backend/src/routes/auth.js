@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
 const { Pool } = require("pg");
 const { Resend } = require("resend");
 
@@ -14,7 +13,7 @@ const pool = new Pool({
       : false,
 });
 
-// ================= RESEND CONFIG =================
+// ================= RESEND =================
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ================= REGISTER =================
@@ -23,15 +22,11 @@ router.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({
-        error: "กรุณากรอกข้อมูลให้ครบ",
-      });
+      return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบ" });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({
-        error: "รหัสผ่านอย่างน้อย 6 ตัว",
-      });
+      return res.status(400).json({ error: "รหัสผ่านอย่างน้อย 6 ตัว" });
     }
 
     const dup = await pool.query(
@@ -40,9 +35,7 @@ router.post("/register", async (req, res) => {
     );
 
     if (dup.rows.length > 0) {
-      return res.status(409).json({
-        error: "อีเมลนี้ถูกใช้งานแล้ว",
-      });
+      return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -60,25 +53,15 @@ router.post("/register", async (req, res) => {
     });
 
   } catch (e) {
-    console.error("REGISTER ERROR:", e);
-
-    res.status(500).json({
-      error: "Server error",
-    });
+    console.error(e);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 // ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
-
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        error: "กรุณากรอก email และ password",
-      });
-    }
 
     const q = await pool.query(
       "SELECT * FROM users WHERE email=$1",
@@ -86,22 +69,15 @@ router.post("/login", async (req, res) => {
     );
 
     if (q.rows.length === 0) {
-      return res.status(401).json({
-        error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
-      });
+      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     const user = q.rows[0];
 
-    const ok = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const ok = await bcrypt.compare(password, user.password);
 
     if (!ok) {
-      return res.status(401).json({
-        error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
-      });
+      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     res.json({
@@ -114,19 +90,14 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (e) {
-    console.error("LOGIN ERROR:", e);
-
-    res.status(500).json({
-      error: "Server error",
-    });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-// ================= FORGOT PASSWORD =================
-router.post("/forgot-password", async (req, res) => {
 
+// ================= SEND OTP =================
+router.post("/send-otp", async (req, res) => {
   try {
-
     const { email } = req.body;
 
     const user = await pool.query(
@@ -135,154 +106,117 @@ router.post("/forgot-password", async (req, res) => {
     );
 
     if (user.rows.length === 0) {
-      return res.status(404).json({
-        error: "ไม่พบอีเมลนี้",
-      });
+      return res.status(404).json({ error: "ไม่พบอีเมลนี้" });
     }
 
-    const userId = user.rows[0].user_id;
+    //generate OTP 6 หลัก
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // create token
-    const token = crypto
-      .randomBytes(32)
-      .toString("hex");
+    const expire = new Date(Date.now() + 5 * 60 * 1000); // 5 นาที
 
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-
-    const expire = new Date(
-      Date.now() + 1000 * 60 * 30
-    ); // 30 นาที
-
+    //ลบ OTP เก่า (กัน spam)
     await pool.query(
-      `INSERT INTO password_reset_tokens
-      (user_id,token_hash,expires_at)
-      VALUES ($1,$2,$3)`,
-      [userId, tokenHash, expire]
+      "DELETE FROM otp_codes WHERE email=$1",
+      [email.toLowerCase()]
     );
 
-    const resetLink =
-      `https://moodi-reset-password.vercel.app/?token=${token}`;
+    await pool.query(
+      `INSERT INTO otp_codes (email, code, expires_at)
+       VALUES ($1,$2,$3)`,
+      [email.toLowerCase(), otp, expire]
+    );
 
-    console.log("Sending email to:", email);
-
-    const data = await resend.emails.send({
-
+    // ส่ง email
+    await resend.emails.send({
       from: "Moodi App <onboarding@resend.dev>",
-
       to: email,
-
-      subject: "รีเซ็ตรหัสผ่าน Moodi",
-
+      subject: "OTP รีเซ็ตรหัสผ่าน",
       html: `
-      <div style="font-family:sans-serif">
-
-      <h2>รีเซ็ตรหัสผ่าน</h2>
-
-      <p>คุณได้ขอรีเซ็ตรหัสผ่านสำหรับบัญชี Moodi</p>
-
-      <a href="${resetLink}"
-      style="
-      padding:12px 20px;
-      background:#7B68EE;
-      color:white;
-      text-decoration:none;
-      border-radius:6px;
-      display:inline-block;">
-      รีเซ็ตรหัสผ่าน
-      </a>
-
-      <p>ลิงก์นี้จะหมดอายุภายใน 30 นาที</p>
-
-      </div>
+        <h2>รหัส OTP ของคุณ</h2>
+        <h1>${otp}</h1>
+        <p>OTP นี้มีอายุ 5 นาที</p>
       `,
     });
 
-    console.log("EMAIL RESPONSE:", data);
-
-    res.json({
-      message: "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว",
-    });
+    res.json({ message: "ส่ง OTP แล้ว" });
 
   } catch (err) {
-
-    console.error("FORGOT PASSWORD ERROR:", err);
-
-    res.status(500).json({
-      error: "server error",
-    });
-
+    console.error("SEND OTP ERROR:", err);
+    res.status(500).json({ error: "server error" });
   }
-
 });
 
-// ================= RESET PASSWORD =================
-router.post("/reset-password", async (req, res) => {
 
+// ================= VERIFY OTP =================
+router.post("/verify-otp", async (req, res) => {
   try {
+    const { email, code } = req.body;
 
-    const { token, password } = req.body;
-
-    const tokenHash = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-
-    const tokenResult = await pool.query(
-      `SELECT *
-       FROM password_reset_tokens
-       WHERE token_hash=$1
+    const result = await pool.query(
+      `SELECT * FROM otp_codes
+       WHERE email=$1
+       AND code=$2
        AND expires_at > NOW()
-       AND used_at IS NULL`,
-      [tokenHash]
+       AND used=false
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email.toLowerCase(), code]
     );
 
-    if (tokenResult.rows.length === 0) {
-      return res.status(400).json({
-        error: "Token ไม่ถูกต้องหรือหมดอายุ",
-      });
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "OTP ไม่ถูกต้องหรือหมดอายุ" });
     }
 
-    const resetToken = tokenResult.rows[0];
-
-    const hash = await bcrypt.hash(
-      password,
-      10
-    );
-
     await pool.query(
-      "UPDATE users SET password=$1 WHERE user_id=$2",
-      [hash, resetToken.user_id]
+      "UPDATE otp_codes SET used=true WHERE id=$1",
+      [result.rows[0].id]
     );
 
-    await pool.query(
-      `UPDATE password_reset_tokens
-       SET used_at=NOW()
-       WHERE id=$1`,
-      [resetToken.id]
-    );
-
-    res.json({
-      message: "รีเซ็ตรหัสผ่านสำเร็จ",
-    });
+    res.json({ message: "OTP ถูกต้อง" });
 
   } catch (err) {
-
-    res.status(500).json({
-      error: "server error",
-    });
-
+    res.status(500).json({ error: "server error" });
   }
-
 });
+
+
+// ================= RESET PASSWORD WITH OTP =================
+router.post("/reset-password-otp", async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    const result = await pool.query(
+      `SELECT * FROM otp_codes
+       WHERE email=$1
+       AND code=$2
+       AND used=true
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email.toLowerCase(), code]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "OTP ไม่ถูกต้อง" });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      "UPDATE users SET password=$1 WHERE email=$2",
+      [hash, email.toLowerCase()]
+    );
+
+    res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
+
+  } catch (err) {
+    res.status(500).json({ error: "server error" });
+  }
+});
+
 
 // ================= CHANGE PASSWORD =================
 router.post("/change-password", async (req, res) => {
-
   try {
-
     const { user_id, oldPassword, newPassword } = req.body;
 
     const user = await pool.query(
@@ -291,9 +225,7 @@ router.post("/change-password", async (req, res) => {
     );
 
     if (user.rows.length === 0) {
-      return res.status(404).json({
-        error: "ไม่พบผู้ใช้",
-      });
+      return res.status(404).json({ error: "ไม่พบผู้ใช้" });
     }
 
     const match = await bcrypt.compare(
@@ -302,33 +234,21 @@ router.post("/change-password", async (req, res) => {
     );
 
     if (!match) {
-      return res.status(401).json({
-        error: "รหัสผ่านเดิมไม่ถูกต้อง",
-      });
+      return res.status(401).json({ error: "รหัสผ่านเดิมไม่ถูกต้อง" });
     }
 
-    const hash = await bcrypt.hash(
-      newPassword,
-      10
-    );
+    const hash = await bcrypt.hash(newPassword, 10);
 
     await pool.query(
       "UPDATE users SET password=$1 WHERE user_id=$2",
       [hash, user_id]
     );
 
-    res.json({
-      message: "เปลี่ยนรหัสผ่านสำเร็จ",
-    });
+    res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
 
   } catch (err) {
-
-    res.status(500).json({
-      error: "server error",
-    });
-
+    res.status(500).json({ error: "server error" });
   }
-
 });
 
 module.exports = router;
