@@ -116,12 +116,12 @@ router.post("/send-otp", async (req, res) => {
 
     //ลบ OTP เก่า (กัน spam)
     await pool.query(
-      "DELETE FROM otp_codes WHERE email=$1",
+      "DELETE FROM OtpCode WHERE email=$1",
       [email.toLowerCase()]
     );
 
     await pool.query(
-      `INSERT INTO otp_codes (email, code, expires_at)
+      `INSERT INTO OtpCode (email, code, expires_at)
        VALUES ($1,$2,$3)`,
       [email.toLowerCase(), otp, expire]
     );
@@ -153,7 +153,7 @@ router.post("/verify-otp", async (req, res) => {
     const { email, code } = req.body;
 
     const result = await pool.query(
-      `SELECT * FROM otp_codes
+      `SELECT * FROM OtpCode
        WHERE email=$1
        AND code=$2
        AND expires_at > NOW()
@@ -168,7 +168,7 @@ router.post("/verify-otp", async (req, res) => {
     }
 
     await pool.query(
-      "UPDATE otp_codes SET used=true WHERE id=$1",
+      "UPDATE OtpCode SET used=true WHERE id=$1",
       [result.rows[0].id]
     );
 
@@ -186,7 +186,7 @@ router.post("/reset-password-otp", async (req, res) => {
     const { email, code, newPassword } = req.body;
 
     const result = await pool.query(
-      `SELECT * FROM otp_codes
+      `SELECT * FROM OtpCode
        WHERE email=$1
        AND code=$2
        AND used=true
