@@ -46,11 +46,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFE8F4FD), // สีฟ้าอ่อน
-              Color(0xFFF8E8FF), // สีชมพูอ่อน
-              Color(0xFFE8F4FD), // สีฟ้าอ่อน
-            ],
+            colors: [Color(0xFFE8F4FD), Color(0xFFF8E8FF), Color(0xFFE8F4FD)],
           ),
         ),
         child: SafeArea(
@@ -147,7 +143,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                     ),
                     SizedBox(height: 30),
 
-                    // แสดงเนื้อหาตามสถานะ
                     if (!_isEmailSent) ...[
                       _buildForgotPasswordForm(),
                     ] else ...[
@@ -163,11 +158,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     );
   }
 
-  // ฟอร์มลืมรหัสผ่าน
   Widget _buildForgotPasswordForm() {
     return Column(
       children: [
-        // หัวข้อ
         Text(
           'ลืมรหัสผ่าน?',
           style: TextStyle(
@@ -178,7 +171,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 12),
 
-        // คำอธิบาย
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Text(
@@ -193,7 +185,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 50),
 
-        // ไอคอนอีเมล
         Container(
           width: 80,
           height: 80,
@@ -209,12 +200,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 30),
 
-        // ฟอร์มกรอกอีเมล
         Form(
           key: _formKey,
           child: Column(
             children: [
-              // ช่องกรอกอีเมล
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
@@ -257,7 +246,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               ),
               SizedBox(height: 40),
 
-              // ปุ่มส่งลิงก์รีเซ็ต
               Container(
                 width: double.infinity,
                 height: 60,
@@ -323,7 +311,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 40),
 
-        // ลิงก์กลับไปหน้าเข้าสู่ระบบ
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -348,11 +335,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     );
   }
 
-  // หน้าจอแสดงเมื่อส่งอีเมลสำเร็จ
   Widget _buildEmailSentSuccess() {
     return Column(
       children: [
-        // ไอคอนสำเร็จ
         Container(
           width: 120,
           height: 120,
@@ -369,7 +354,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 30),
 
-        // ข้อความสำเร็จ
         Text(
           'ส่งอีเมลเรียบร้อย!',
           style: TextStyle(
@@ -380,7 +364,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 16),
 
-        // คำอธิบาย
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: RichText(
@@ -410,7 +393,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 50),
 
-        // ปุ่มเปิดแอปอีเมล
         Container(
           width: double.infinity,
           height: 60,
@@ -455,7 +437,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 20),
 
-        // ปุ่มส่งอีเมลใหม่
         TextButton(
           onPressed: _resendEmail,
           child: Text(
@@ -469,7 +450,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
         SizedBox(height: 40),
 
-        // ปุ่มกลับไปหน้าเข้าสู่ระบบ
         OutlinedButton(
           onPressed: () => Navigator.pop(context),
           style: OutlinedButton.styleFrom(
@@ -492,7 +472,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     );
   }
 
-  // ตรวจสอบรูปแบบอีเมล
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'กรุณากรอกอีเมล';
@@ -503,7 +482,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     return null;
   }
 
-  // ส่งลิงก์รีเซ็ตรหัสผ่าน
+  // ✅ แก้ไขแล้ว — ยิง API จริง ไม่มี Future.delayed แล้ว
   Future<void> _handleSendResetLink() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -524,7 +503,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         setState(() {
           _isEmailSent = true;
         });
-
         _showSnackBar('ส่ง OTP ไปที่อีเมลแล้ว', Colors.green);
       } else {
         _showSnackBar(data['error'] ?? 'เกิดข้อผิดพลาด', Colors.red);
@@ -538,7 +516,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     }
   }
 
-  // ส่งอีเมลใหม่
   void _resendEmail() {
     setState(() {
       _isEmailSent = false;
@@ -546,14 +523,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     _handleSendResetLink();
   }
 
-  // เปิดแอปอีเมล
   void _openEmailApp() {
     _showSnackBar('เปิดแอปอีเมล...', Colors.blue);
-    // ในโค้ดจริงจะใช้ package url_launcher
-    // await launch('mailto:');
+    // ใช้ url_launcher ในโปรเจกต์จริง:
+    // await launchUrl(Uri.parse('mailto:'));
   }
 
-  // แสดง SnackBar
   void _showSnackBar(String message, Color backgroundColor) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
