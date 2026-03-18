@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -503,34 +505,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   // ส่งลิงก์รีเซ็ตรหัสผ่าน
   Future<void> _handleSendResetLink() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // จำลองการส่งอีเมล (ใช้เวลา 2 วินาที)
-      await Future.delayed(Duration(seconds: 2));
+      final response = await http.post(
+        Uri.parse('https://moodi-production.up.railway.app/auth/send-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': _emailController.text.trim()}),
+      );
 
-      // ในโค้ดจริง จะเรียก API เพื่อส่งอีเมลรีเซ็ตรหัสผ่าน
-      // await AuthService.sendPasswordResetEmail(_emailController.text);
+      final data = jsonDecode(response.body);
 
-      setState(() {
-        _isLoading = false;
-        _isEmailSent = true;
-      });
+      if (response.statusCode == 200) {
+        setState(() {
+          _isEmailSent = true;
+        });
 
-      // แสดงข้อความสำเร็จ
-      _showSnackBar('ส่งลิงก์รีเซ็ตรหัสผ่านเรียบร้อยแล้ว', Colors.green);
+        _showSnackBar('ส่ง OTP ไปที่อีเมลแล้ว', Colors.green);
+      } else {
+        _showSnackBar(data['error'] ?? 'เกิดข้อผิดพลาด', Colors.red);
+      }
     } catch (e) {
+      _showSnackBar('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', Colors.red);
+    } finally {
       setState(() {
         _isLoading = false;
       });
-
-      _showSnackBar('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง', Colors.red);
     }
   }
 
