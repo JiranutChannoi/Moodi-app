@@ -120,7 +120,7 @@ router.post("/send-otp", async (req, res) => {
     );
 
     await pool.query(
-      `INSERT INTO "OtpCode" (email, code, expires_at)
+      `INSERT INTO "OtpCode" (email, code, "expiresAt")
        VALUES ($1,$2,$3)`,
       [email.toLowerCase(), otp, expire]
     );
@@ -156,7 +156,7 @@ router.post("/verify-otp", async (req, res) => {
        AND code=$2
        AND expires_at > NOW()
        AND used=false
-       ORDER BY created_at DESC
+       ORDER BY "createdAt" DESC
        LIMIT 1`,
       [email.toLowerCase(), code]
     );
@@ -189,7 +189,7 @@ router.post("/reset-password-otp", async (req, res) => {
        WHERE email=$1
        AND code=$2
        AND used=true
-       ORDER BY created_at DESC
+       ORDER BY "createdAt" DESC
        LIMIT 1`,
       [email.toLowerCase(), code]
     );
