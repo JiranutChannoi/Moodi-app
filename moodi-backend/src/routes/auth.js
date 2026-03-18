@@ -154,7 +154,7 @@ router.post("/verify-otp", async (req, res) => {
       `SELECT * FROM "OtpCode"
        WHERE email=$1
        AND code=$2
-       AND expires_at > NOW()
+       AND "expiresAt" > NOW()
        AND used=false
        ORDER BY "createdAt" DESC
        LIMIT 1`,
