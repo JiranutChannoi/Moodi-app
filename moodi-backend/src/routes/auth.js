@@ -53,7 +53,7 @@ router.post("/register", async (req, res) => {
     });
 
   } catch (e) {
-    console.error(e);
+    console.error("REGISTER ERROR:", e);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -90,6 +90,7 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (e) {
+    console.error("LOGIN ERROR:", e);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -109,24 +110,21 @@ router.post("/send-otp", async (req, res) => {
       return res.status(404).json({ error: "ไม่พบอีเมลนี้" });
     }
 
-    //generate OTP 6 หลัก
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expire = new Date(Date.now() + 5 * 60 * 1000);
 
-    const expire = new Date(Date.now() + 5 * 60 * 1000); // 5 นาที
-
-    //ลบ OTP เก่า (กัน spam)
+    //ใส่ ""
     await pool.query(
-      "DELETE FROM OtpCode WHERE email=$1",
+      'DELETE FROM "OtpCode" WHERE email=$1',
       [email.toLowerCase()]
     );
 
     await pool.query(
-      `INSERT INTO OtpCode (email, code, expires_at)
+      `INSERT INTO "OtpCode" (email, code, expires_at)
        VALUES ($1,$2,$3)`,
       [email.toLowerCase(), otp, expire]
     );
 
-    // ส่ง email
     await resend.emails.send({
       from: "Moodi App <onboarding@resend.dev>",
       to: email,
@@ -153,7 +151,7 @@ router.post("/verify-otp", async (req, res) => {
     const { email, code } = req.body;
 
     const result = await pool.query(
-      `SELECT * FROM OtpCode
+      `SELECT * FROM "OtpCode"
        WHERE email=$1
        AND code=$2
        AND expires_at > NOW()
@@ -168,25 +166,26 @@ router.post("/verify-otp", async (req, res) => {
     }
 
     await pool.query(
-      "UPDATE OtpCode SET used=true WHERE id=$1",
+      'UPDATE "OtpCode" SET used=true WHERE id=$1',
       [result.rows[0].id]
     );
 
     res.json({ message: "OTP ถูกต้อง" });
 
   } catch (err) {
+    console.error("VERIFY OTP ERROR:", err);
     res.status(500).json({ error: "server error" });
   }
 });
 
 
-// ================= RESET PASSWORD WITH OTP =================
+// ================= RESET PASSWORD =================
 router.post("/reset-password-otp", async (req, res) => {
   try {
     const { email, code, newPassword } = req.body;
 
     const result = await pool.query(
-      `SELECT * FROM OtpCode
+      `SELECT * FROM "OtpCode"
        WHERE email=$1
        AND code=$2
        AND used=true
@@ -209,6 +208,7 @@ router.post("/reset-password-otp", async (req, res) => {
     res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
 
   } catch (err) {
+    console.error("RESET PASSWORD ERROR:", err);
     res.status(500).json({ error: "server error" });
   }
 });
@@ -247,6 +247,7 @@ router.post("/change-password", async (req, res) => {
     res.json({ message: "เปลี่ยนรหัสผ่านสำเร็จ" });
 
   } catch (err) {
+    console.error("CHANGE PASSWORD ERROR:", err);
     res.status(500).json({ error: "server error" });
   }
 });
