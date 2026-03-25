@@ -213,6 +213,36 @@ router.post("/reset-password-otp", async (req, res) => {
   }
 });
 
+// ================= UPDATE NAME =================
+router.patch("/profile/:id/name", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { name } = req.body;
+
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ error: "กรุณากรอกชื่อ" });
+    }
+
+    const result = await pool.query(
+      "UPDATE users SET name=$1 WHERE user_id=$2 RETURNING name",
+      [name, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+    }
+
+    res.json({
+      message: "อัปเดตชื่อสำเร็จ",
+      name: result.rows[0].name,
+    });
+
+  } catch (err) {
+    console.error("UPDATE NAME ERROR:", err);
+    res.status(500).json({ error: "server error" });
+  }
+});
+
 // ================= CHANGE PASSWORD =================
 router.post("/change-password", async (req, res) => {
   try {
