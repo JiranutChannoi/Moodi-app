@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'otp_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -292,7 +293,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'ส่งลิงก์รีเซ็ต',
+                              'ส่งรหัส OTP',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -500,10 +501,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        setState(() {
-          _isEmailSent = true;
-        });
-        _showSnackBar('ส่ง OTP ไปที่อีเมลแล้ว', Colors.green);
+        _showSnackBar('ส่ง OTP แล้ว', Colors.green);
+
+        // 🔥 ไปหน้า OTP
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                OtpScreen(email: _emailController.text.trim()),
+          ),
+        );
       } else {
         _showSnackBar(data['error'] ?? 'เกิดข้อผิดพลาด', Colors.red);
       }

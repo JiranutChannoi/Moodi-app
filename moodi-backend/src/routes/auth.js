@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const { Pool } = require("pg");
-const { Resend } = require("resend");
+const { Resend } = require("resend"); // ✅ ใช้ Resend
 
 // ================= DATABASE =================
 const pool = new Pool({
@@ -95,7 +95,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
 // ================= SEND OTP =================
 router.post("/send-otp", async (req, res) => {
   try {
@@ -113,11 +112,9 @@ router.post("/send-otp", async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expire = new Date(Date.now() + 5 * 60 * 1000);
 
-    //ใส่ ""
-    await pool.query(
-      'DELETE FROM "OtpCode" WHERE email=$1',
-      [email.toLowerCase()]
-    );
+    await pool.query('DELETE FROM "OtpCode" WHERE email=$1', [
+      email.toLowerCase(),
+    ]);
 
     await pool.query(
       `INSERT INTO "OtpCode" (email, code, "expiresAt")
@@ -125,25 +122,29 @@ router.post("/send-otp", async (req, res) => {
       [email.toLowerCase(), otp, expire]
     );
 
+    // 🔥 ส่งเมลด้วย RESEND
     await resend.emails.send({
-      from: "Moodi App <onboarding@resend.dev>",
+      from: "Moodi <onboarding@resend.dev>", // ใช้ได้เลย
       to: email,
-      subject: "OTP รีเซ็ตรหัสผ่าน",
+      subject: "OTP รีเซ็ตรหัสผ่าน Moodi",
       html: `
-        <h2>รหัส OTP ของคุณ</h2>
-        <h1>${otp}</h1>
-        <p>OTP นี้มีอายุ 5 นาที</p>
+        <div style="font-family:sans-serif">
+          <h2>รหัส OTP ของคุณ</h2>
+          <h1>${otp}</h1>
+          <p>OTP นี้มีอายุ 5 นาที</p>
+        </div>
       `,
     });
+
+    console.log("📩 ส่ง OTP ไป:", email);
 
     res.json({ message: "ส่ง OTP แล้ว" });
 
   } catch (err) {
     console.error("SEND OTP ERROR:", err);
-    res.status(500).json({ error: "server error" });
+    res.status(500).json({ error: "ส่งอีเมลไม่สำเร็จ" });
   }
 });
-
 
 // ================= VERIFY OTP =================
 router.post("/verify-otp", async (req, res) => {
@@ -178,7 +179,6 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
-
 // ================= RESET PASSWORD =================
 router.post("/reset-password-otp", async (req, res) => {
   try {
@@ -212,7 +212,6 @@ router.post("/reset-password-otp", async (req, res) => {
     res.status(500).json({ error: "server error" });
   }
 });
-
 
 // ================= CHANGE PASSWORD =================
 router.post("/change-password", async (req, res) => {
