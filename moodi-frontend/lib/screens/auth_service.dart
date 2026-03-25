@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String _baseUrl = 'https://moodi-production.up.railway.app';
-  static const Map<String, String> _headers = {'Content-Type': 'application/json'};
+  static const Map<String, String> _headers = {
+    'Content-Type': 'application/json',
+  };
 
   // ================= REGISTER =================
   static Future<Map<String, dynamic>> register({
@@ -22,7 +24,10 @@ class AuthService {
       if (res.statusCode == 201) {
         return {'success': true, 'message': data['message']};
       }
-      return {'success': false, 'message': data['error'] ?? 'สมัครสมาชิกไม่สำเร็จ'};
+      return {
+        'success': false,
+        'message': data['error'] ?? 'สมัครสมาชิกไม่สำเร็จ',
+      };
     } catch (_) {
       return {'success': false, 'message': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'};
     }
@@ -49,7 +54,10 @@ class AuthService {
           'message': data['message'],
         };
       }
-      return {'success': false, 'message': data['error'] ?? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'};
+      return {
+        'success': false,
+        'message': data['error'] ?? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+      };
     } catch (_) {
       return {'success': false, 'message': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'};
     }
@@ -83,7 +91,10 @@ class AuthService {
         await saveCurrentUser(data['user']);
         return {'success': true, 'user': data['user']};
       }
-      return {'success': false, 'message': data['error'] ?? 'ดึงข้อมูลไม่สำเร็จ'};
+      return {
+        'success': false,
+        'message': data['error'] ?? 'ดึงข้อมูลไม่สำเร็จ',
+      };
     } catch (_) {
       return {'success': false, 'message': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'};
     }
@@ -111,9 +122,15 @@ class AuthService {
           user['name'] = name;
           await prefs.setString('current_user', jsonEncode(user));
         }
-        return {'success': true, 'message': data['message'] ?? 'อัปเดตชื่อสำเร็จ'};
+        return {
+          'success': true,
+          'message': data['message'] ?? 'อัปเดตชื่อสำเร็จ',
+        };
       }
-      return {'success': false, 'message': data['error'] ?? 'อัปเดตชื่อไม่สำเร็จ'};
+      return {
+        'success': false,
+        'message': data['error'] ?? 'อัปเดตชื่อไม่สำเร็จ',
+      };
     } catch (_) {
       return {'success': false, 'message': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'};
     }
@@ -126,20 +143,26 @@ class AuthService {
     required String newPassword,
   }) async {
     try {
-      final res = await http.patch(
-        Uri.parse('$_baseUrl/auth/profile/$userId/password'),
+      final res = await http.post(
+        Uri.parse('$_baseUrl/auth/change-password'), // 🔥 แก้ตรงนี้
         headers: _headers,
         body: jsonEncode({
-          'old_password': oldPassword,
-          'new_password': newPassword,
+          'user_id': userId,
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
         }),
       );
+
       final data = jsonDecode(res.body);
 
       if (res.statusCode == 200) {
-        return {'success': true, 'message': data['message'] ?? 'เปลี่ยนรหัสผ่านสำเร็จ'};
+        return {'success': true, 'message': data['message']};
       }
-      return {'success': false, 'message': data['error'] ?? 'เปลี่ยนรหัสผ่านไม่สำเร็จ'};
+
+      return {
+        'success': false,
+        'message': data['error'] ?? 'เปลี่ยนรหัสผ่านไม่สำเร็จ',
+      };
     } catch (_) {
       return {'success': false, 'message': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'};
     }
