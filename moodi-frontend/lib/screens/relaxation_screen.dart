@@ -87,6 +87,7 @@ class _RelaxationScreenState extends State<RelaxationScreen> {
     // ✅ เล่นเสียง
     final url = soundUrls[selectedSound];
     if (url != null) {
+      await _player.setReleaseMode(ReleaseMode.loop);
       await _player.play(UrlSource(url));
     }
 
