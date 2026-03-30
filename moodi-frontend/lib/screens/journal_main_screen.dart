@@ -162,7 +162,11 @@ class _JournalMainScreenState extends State<JournalMainScreen>
               ),
             ],
           ),
-          child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF7B5A96), size: 20),
+          child: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF7B5A96),
+            size: 20,
+          ),
         ),
       ),
     );
@@ -175,14 +179,18 @@ class _JournalMainScreenState extends State<JournalMainScreen>
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const JournalHistoryScreen()),
+            MaterialPageRoute(
+              builder: (context) => const JournalHistoryScreen(),
+            ),
           );
         },
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF81C784), Color(0xFF66BB6A)]),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF81C784), Color(0xFF66BB6A)],
+            ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -197,7 +205,14 @@ class _JournalMainScreenState extends State<JournalMainScreen>
             children: [
               Icon(Icons.history_rounded, color: Colors.white, size: 20),
               SizedBox(width: 8),
-              Text('ประวัติ', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+              Text(
+                'ประวัติ',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
@@ -349,7 +364,12 @@ class _JournalMainScreenState extends State<JournalMainScreen>
   }
 
   // ประกายแสง
-  Widget _buildSparkle({double? top, double? left, double? right, required double size}) {
+  Widget _buildSparkle({
+    double? top,
+    double? left,
+    double? right,
+    required double size,
+  }) {
     return Positioned(
       top: top,
       left: left,
@@ -377,7 +397,11 @@ class _JournalMainScreenState extends State<JournalMainScreen>
     return const Center(
       child: Text(
         'สมุดสะท้อนความคิด',
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E)),
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF6B4E7E),
+        ),
       ),
     );
   }
@@ -387,11 +411,20 @@ class _JournalMainScreenState extends State<JournalMainScreen>
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFFFFF9E6), Color(0xFFFFFDF5)]),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF9E6), Color(0xFFFFFDF5)],
+        ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFFE082).withOpacity(0.4), width: 2),
+        border: Border.all(
+          color: const Color(0xFFFFE082).withOpacity(0.4),
+          width: 2,
+        ),
         boxShadow: [
-          BoxShadow(color: const Color(0xFFFFD54F).withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: const Color(0xFFFFD54F).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Row(
@@ -399,21 +432,35 @@ class _JournalMainScreenState extends State<JournalMainScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFFFD54F), Color(0xFFFFCA28)]),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFD54F), Color(0xFFFFCA28)],
+              ),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('บันทึกความคิดของคุณ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E))),
+                Text(
+                  'บันทึกความคิดของคุณ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6B4E7E),
+                  ),
+                ),
                 SizedBox(height: 4),
-                Text('เขียนสะท้อนวันนี้ เพื่อเข้าใจตัวเองมากขึ้น',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF8D6E63))),
+                Text(
+                  'เขียนสะท้อนวันนี้ เพื่อเข้าใจตัวเองมากขึ้น',
+                  style: TextStyle(fontSize: 13, color: Color(0xFF8D6E63)),
+                ),
               ],
             ),
           ),
@@ -425,7 +472,11 @@ class _JournalMainScreenState extends State<JournalMainScreen>
   Widget _buildSubtitle(String text) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 15, color: Color(0xFF6B4E7E), fontWeight: FontWeight.bold),
+      style: const TextStyle(
+        fontSize: 15,
+        color: Color(0xFF6B4E7E),
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
@@ -455,8 +506,12 @@ class _JournalMainScreenState extends State<JournalMainScreen>
               });
             },
             borderRadius: BorderRadius.circular(12),
-            child: _buildChip(issues[index]['label'], issues[index]['selected'],
-                const Color(0xFFB8D4F1), const Color(0xFF4A6FA5)),
+            child: _buildChip(
+              issues[index]['label'],
+              issues[index]['selected'],
+              const Color(0xFFB8D4F1),
+              const Color(0xFF4A6FA5),
+            ),
           ),
         );
       },
@@ -468,24 +523,37 @@ class _JournalMainScreenState extends State<JournalMainScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFFE8F4F8), Color(0xFFF5FAFC)]),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE8F4F8), Color(0xFFF5FAFC)],
+        ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFB8D4F1).withOpacity(0.6), width: 2),
+        border: Border.all(
+          color: const Color(0xFFB8D4F1).withOpacity(0.6),
+          width: 2,
+        ),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF90B8E8), Color(0xFFADCBEE)]),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF90B8E8), Color(0xFFADCBEE)],
+              ),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.event_note, color: Colors.white, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text('เหตุการณ์ : $selectedIssue',
-                style: const TextStyle(fontSize: 14, color: Color(0xFF4A6FA5), fontWeight: FontWeight.bold)),
+            child: Text(
+              'เหตุการณ์ : $selectedIssue',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF4A6FA5),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -517,7 +585,9 @@ class _JournalMainScreenState extends State<JournalMainScreen>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
               decoration: BoxDecoration(
                 gradient: feeling['selected']
-                    ? const LinearGradient(colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)])
+                    ? const LinearGradient(
+                        colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)],
+                      )
                     : null,
                 color: feeling['selected'] ? null : Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -537,7 +607,9 @@ class _JournalMainScreenState extends State<JournalMainScreen>
                     feeling['label'],
                     style: TextStyle(
                       fontSize: 13,
-                      color: feeling['selected'] ? const Color(0xFF7B5A96) : const Color(0xFF6B6B6B),
+                      color: feeling['selected']
+                          ? const Color(0xFF7B5A96)
+                          : const Color(0xFF6B6B6B),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -551,17 +623,26 @@ class _JournalMainScreenState extends State<JournalMainScreen>
   }
 
   // Chip reusable widget
-  Widget _buildChip(String label, bool selected, Color selectedColor, Color textColor) {
+  Widget _buildChip(
+    String label,
+    bool selected,
+    Color selectedColor,
+    Color textColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         gradient: selected
-            ? LinearGradient(colors: [selectedColor, selectedColor.withOpacity(0.8)])
+            ? LinearGradient(
+                colors: [selectedColor, selectedColor.withOpacity(0.8)],
+              )
             : null,
         color: selected ? null : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: selected ? selectedColor.withOpacity(0.6) : const Color(0xFFE0E0E0),
+          color: selected
+              ? selectedColor.withOpacity(0.6)
+              : const Color(0xFFE0E0E0),
           width: 2,
         ),
       ),
@@ -590,21 +671,42 @@ class _JournalMainScreenState extends State<JournalMainScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)]),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFD4B5E8), Color(0xFFE3CBF1)],
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.psychology, color: Colors.white, size: 18),
+              child: const Icon(
+                Icons.psychology,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 8),
-            Text('ความรู้สึก : $selectedFeeling',
-                style: const TextStyle(fontSize: 14, color: Color(0xFF6B4E7E), fontWeight: FontWeight.bold)),
+            Text(
+              'ความรู้สึก : $selectedFeeling',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF6B4E7E),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
-        const Text('แนวทางที่ใช้จัดการปัญหา',
-            style: TextStyle(fontSize: 14, color: Color(0xFF6B4E7E), fontWeight: FontWeight.bold)),
+        const Text(
+          'แนวทางที่ใช้จัดการปัญหา',
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6B4E7E),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
-        _buildTextField(thoughtsController, 'อธิบายวิธีที่คุณใช้จัดการกับสถานการณ์ที่เกิดขึ้น......'),
+        _buildTextField(
+          thoughtsController,
+          'อธิบายวิธีที่คุณใช้จัดการกับสถานการณ์ที่เกิดขึ้น......',
+        ),
       ],
     );
   }
@@ -613,10 +715,19 @@ class _JournalMainScreenState extends State<JournalMainScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต',
-            style: TextStyle(fontSize: 14, color: Color(0xFF6B4E7E), fontWeight: FontWeight.bold)),
+        const Text(
+          'สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต',
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6B4E7E),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
-        _buildTextField(actionsController, 'เขียนสิ่งที่คุณได้รับหรือต้องการปรับปรุงในอนาคต.....'),
+        _buildTextField(
+          actionsController,
+          'เขียนสิ่งที่คุณได้รับหรือต้องการปรับปรุงในอนาคต.....',
+        ),
       ],
     );
   }
@@ -628,7 +739,11 @@ class _JournalMainScreenState extends State<JournalMainScreen>
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE0E0E0), width: 2),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF9C7AB8).withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: const Color(0xFF9C7AB8).withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: TextField(
@@ -656,10 +771,16 @@ class _JournalMainScreenState extends State<JournalMainScreen>
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF66BB6A), Color(0xFF81C784)]),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF66BB6A), Color(0xFF81C784)],
+            ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              BoxShadow(color: const Color(0xFF66BB6A).withOpacity(0.5), blurRadius: 15, offset: const Offset(0, 8)),
+              BoxShadow(
+                color: const Color(0xFF66BB6A).withOpacity(0.5),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
             ],
           ),
           child: const Row(
@@ -667,8 +788,14 @@ class _JournalMainScreenState extends State<JournalMainScreen>
             children: [
               Icon(Icons.bookmark, color: Colors.white, size: 24),
               SizedBox(width: 10),
-              Text('บันทึกความคิด',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(
+                'บันทึกความคิด',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ],
           ),
         ),
@@ -712,9 +839,9 @@ class _JournalMainScreenState extends State<JournalMainScreen>
 
   void _showSnackBar(String message, Color color) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 }
 
@@ -788,7 +915,8 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
             if (e['createdAt'] != null || e['created_at'] != null) {
               final dateStr = (e['createdAt'] ?? e['created_at']).toString();
               final date = DateTime.parse(dateStr).toLocal();
-              formattedDate = '${date.day}/${date.month}/${date.year + 543} '
+              formattedDate =
+                  '${date.day}/${date.month}/${date.year + 543} '
                   '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')} น.';
             }
           } catch (err) {
@@ -844,7 +972,9 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         content: Row(
           children: [
             Icon(
-              color == const Color(0xFF66BB6A) ? Icons.check_circle_rounded : Icons.error_outline,
+              color == const Color(0xFF66BB6A)
+                  ? Icons.check_circle_rounded
+                  : Icons.error_outline,
               color: Colors.white,
             ),
             const SizedBox(width: 12),
@@ -876,7 +1006,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
               _buildHeader(),
               Expanded(
                 child: isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF9C7AB8)))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF9C7AB8),
+                        ),
+                      )
                     : _buildContent(),
               ),
             ],
@@ -911,7 +1045,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                     ),
                   ],
                 ),
-                child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF7B5A96), size: 20),
+                child: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: Color(0xFF7B5A96),
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -1014,7 +1152,12 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     );
   }
 
-  Widget _buildPaper({double? top, double? right, double angle = 0, required List<Color> colors}) {
+  Widget _buildPaper({
+    double? top,
+    double? right,
+    double angle = 0,
+    required List<Color> colors,
+  }) {
     return Positioned(
       top: top,
       right: right,
@@ -1026,7 +1169,13 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: colors),
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: colors[0].withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8))],
+            boxShadow: [
+              BoxShadow(
+                color: colors[0].withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -1050,7 +1199,12 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     );
   }
 
-  Widget _buildSparkle({double? top, double? left, double? right, required double size}) {
+  Widget _buildSparkle({
+    double? top,
+    double? left,
+    double? right,
+    required double size,
+  }) {
     return Positioned(
       top: top,
       left: left,
@@ -1061,7 +1215,12 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         decoration: BoxDecoration(
           color: const Color(0xFFFFEB3B).withOpacity(0.8),
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: const Color(0xFFFFEB3B).withOpacity(0.6), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFEB3B).withOpacity(0.6),
+              blurRadius: 10,
+            ),
+          ],
         ),
       ),
     );
@@ -1071,7 +1230,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     return const Center(
       child: Text(
         'สมุดสะท้อนความคิด',
-        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E)),
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF6B4E7E),
+        ),
       ),
     );
   }
@@ -1081,15 +1244,21 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [
-            const Color(0xFFFFD54F).withOpacity(0.2),
-            const Color(0xFFFFCA28).withOpacity(0.15),
-          ]),
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFFFFD54F).withOpacity(0.2),
+              const Color(0xFFFFCA28).withOpacity(0.15),
+            ],
+          ),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Text(
           'ย้อนดูความคิดและการเติบโตของคุณ',
-          style: TextStyle(fontSize: 13, color: Color(0xFF8D6E63), fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 13,
+            color: Color(0xFF8D6E63),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -1100,44 +1269,70 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [
-          const Color(0xFFE8D5F0).withOpacity(0.5),
-          const Color(0xFFD4E9F7).withOpacity(0.4),
-        ]),
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFE8D5F0).withOpacity(0.5),
+            const Color(0xFFD4E9F7).withOpacity(0.4),
+          ],
+        ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFD4B5E8).withOpacity(0.4), width: 2),
+        border: Border.all(
+          color: const Color(0xFFD4B5E8).withOpacity(0.4),
+          width: 2,
+        ),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF9C7AB8), Color(0xFFAB8FC9)]),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF9C7AB8), Color(0xFFAB8FC9)],
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.history_rounded, color: Colors.white, size: 24),
+            child: const Icon(
+              Icons.history_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('ประวัติบันทึก',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E))),
+                Text(
+                  'ประวัติบันทึก',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6B4E7E),
+                  ),
+                ),
                 SizedBox(height: 4),
-                Text('บันทึกทั้งหมดของคุณ', style: TextStyle(fontSize: 12, color: Color(0xFF8D6E63))),
+                Text(
+                  'บันทึกทั้งหมดของคุณ',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF8D6E63)),
+                ),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFFFB3BA), Color(0xFFFF9AA2)]),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFB3BA), Color(0xFFFF9AA2)],
+              ),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               '${diaryEntries.length}',
-              style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -1152,7 +1347,8 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: diaryEntries.length,
-      itemBuilder: (context, index) => _buildDiaryCard(diaryEntries[index], index),
+      itemBuilder: (context, index) =>
+          _buildDiaryCard(diaryEntries[index], index),
     );
   }
 
@@ -1165,7 +1361,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE0E0E0), width: 1.5),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF9C7AB8).withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: const Color(0xFF9C7AB8).withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -1178,8 +1378,14 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(entry['date'],
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B4E7E), fontWeight: FontWeight.bold)),
+                  child: Text(
+                    entry['date'],
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B4E7E),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 Material(
                   color: Colors.transparent,
@@ -1192,7 +1398,11 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                         color: const Color(0xFFFFEBEE),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF5350), size: 20),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFEF5350),
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -1212,7 +1422,10 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
                 const SizedBox(height: 12),
                 _buildTextSection('แนวทางที่ใช้จัดการปัญหา', entry['thoughts']),
                 const SizedBox(height: 10),
-                _buildTextSection('สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต', entry['actions']),
+                _buildTextSection(
+                  'สิ่งที่เรียนรู้ หรืออยากทำให้ดีขึ้นในอนาคต',
+                  entry['actions'],
+                ),
               ],
             ),
           ),
@@ -1224,15 +1437,28 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
   Widget _buildInfoRow(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: RichText(
         text: TextSpan(
           style: const TextStyle(fontSize: 13, color: Color(0xFF6B6B6B)),
           children: [
             TextSpan(
-                text: '$label : ',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E))),
-            TextSpan(text: value, style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF424242))),
+              text: '$label : ',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6B4E7E),
+              ),
+            ),
+            TextSpan(
+              text: value,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF424242),
+              ),
+            ),
           ],
         ),
       ),
@@ -1243,14 +1469,30 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: const TextStyle(fontSize: 13, color: Color(0xFF6B4E7E), fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B4E7E),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(10)),
-          child: Text(text, style: const TextStyle(fontSize: 13, color: Color(0xFF424242), height: 1.5)),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF424242),
+              height: 1.5,
+            ),
+          ),
         ),
       ],
     );
@@ -1267,14 +1509,26 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFFEF5350), Color(0xFFE53935)]),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFEF5350), Color(0xFFE53935)],
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 26),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
             ),
             const SizedBox(width: 14),
-            const Text('ลบบันทึก',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E), fontSize: 20)),
+            const Text(
+              'ลบบันทึก',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6B4E7E),
+                fontSize: 20,
+              ),
+            ),
           ],
         ),
         content: const Text(
@@ -1284,8 +1538,14 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('ยกเลิก',
-                style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold, fontSize: 15)),
+            child: Text(
+              'ยกเลิก',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1294,11 +1554,19 @@ class _JournalHistoryScreenState extends State<JournalHistoryScreen>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF5350),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child:
-                const Text('ลบ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+            child: const Text(
+              'ลบ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 15,
+              ),
+            ),
           ),
         ],
       ),
@@ -1324,21 +1592,42 @@ class _EmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  const Color(0xFF9C7AB8).withOpacity(0.15),
-                  const Color(0xFFAB8FC9).withOpacity(0.1),
-                ]),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF9C7AB8).withOpacity(0.15),
+                    const Color(0xFFAB8FC9).withOpacity(0.1),
+                  ],
+                ),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF9C7AB8).withOpacity(0.3), width: 3),
+                border: Border.all(
+                  color: const Color(0xFF9C7AB8).withOpacity(0.3),
+                  width: 3,
+                ),
               ),
-              child: const Icon(Icons.inbox_outlined, size: 72, color: Color(0xFF9C7AB8)),
+              child: const Icon(
+                Icons.inbox_outlined,
+                size: 72,
+                color: Color(0xFF9C7AB8),
+              ),
             ),
             const SizedBox(height: 24),
-            const Text('ยังไม่มีบันทึก',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF6B4E7E))),
+            const Text(
+              'ยังไม่มีบันทึก',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF6B4E7E),
+              ),
+            ),
             const SizedBox(height: 10),
-            const Text('เริ่มบันทึกความคิดของคุณได้เลย',
-                style: TextStyle(fontSize: 14, color: Color(0xFF8D6E63), fontWeight: FontWeight.w500)),
+            const Text(
+              'เริ่มบันทึกความคิดของคุณได้เลย',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF8D6E63),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),

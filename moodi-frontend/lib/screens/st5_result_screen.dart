@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'st5_test_screen.dart';
-import '../services/api_service.dart';
+import '../services/api_service.dart'; // ✅ ถูกต้อง
 
 class ST5ResultScreen extends StatefulWidget {
   final int score;
@@ -140,7 +140,8 @@ class _ST5ResultScreenState extends State<ST5ResultScreen> {
                                   text: TextSpan(
                                     children: [
                                       TextSpan(
-                                        text: '${(widget.score * value).toInt()}',
+                                        text:
+                                            '${(widget.score * value).toInt()}',
                                         style: TextStyle(
                                           fontSize: 48,
                                           fontWeight: FontWeight.bold,
