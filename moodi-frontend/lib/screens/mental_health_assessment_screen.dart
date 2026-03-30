@@ -93,6 +93,7 @@ class _MentalHealthAssessmentScreenState
     );
   }
 
+  // ✅ เอารูปผู้ใช้ขวามือบนออก เหลือแค่ปุ่มย้อนกลับ
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -101,18 +102,6 @@ class _MentalHealthAssessmentScreenState
           IconButton(
             icon: Icon(Icons.arrow_back, color: Color(0xFF6A1B9A)),
             onPressed: () => Navigator.pop(context),
-          ),
-          Spacer(),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-              ),
-            ),
-            child: Icon(Icons.person, color: Colors.white, size: 24),
           ),
         ],
       ),
@@ -123,7 +112,6 @@ class _MentalHealthAssessmentScreenState
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Outer glow effect
         Container(
           width: 165,
           height: 165,
@@ -135,7 +123,6 @@ class _MentalHealthAssessmentScreenState
             ),
           ),
         ),
-        // Main container with enhanced design
         Container(
           width: 145,
           height: 145,
@@ -166,7 +153,6 @@ class _MentalHealthAssessmentScreenState
           ),
           child: Stack(
             children: [
-              // Decorative corner accents
               Positioned(
                 top: 15,
                 right: 15,
@@ -191,7 +177,6 @@ class _MentalHealthAssessmentScreenState
                   ),
                 ),
               ),
-              // Inner decorative circle
               Center(
                 child: Container(
                   width: 120,
@@ -205,12 +190,10 @@ class _MentalHealthAssessmentScreenState
                   ),
                 ),
               ),
-              // Modern emoji content with icons
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Top row - happy to neutral
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -228,7 +211,6 @@ class _MentalHealthAssessmentScreenState
                       ],
                     ),
                     SizedBox(height: 10),
-                    // Bottom row - sad to very sad
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -251,7 +233,6 @@ class _MentalHealthAssessmentScreenState
             ],
           ),
         ),
-        // Decorative sparkles around the circle
         Positioned(
           top: 0,
           right: 25,

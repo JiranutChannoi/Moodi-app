@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'phq9_test_screen.dart';
-import '../services/api_service.dart'; // ✅ ถูกต้อง
+import '../services/api_service.dart';
+import 'home_screen.dart'; // ✅ import HomeScreen
 
 class PHQ9ResultScreen extends StatefulWidget {
   final int score;
@@ -33,10 +33,9 @@ class _PHQ9ResultScreenState extends State<PHQ9ResultScreen> {
 
   Future<void> _saveResult() async {
     if (_saved) return;
-
     try {
       await ApiService.saveQuizResult(
-        userId: 1, // 🔴 TODO: ใส่ user_id จริงจากระบบ login
+        userId: 1,
         quizType: 'PHQ9',
         totalScore: widget.score,
         level: widget.level,
@@ -193,38 +192,33 @@ class _PHQ9ResultScreenState extends State<PHQ9ResultScreen> {
                         ),
                       ),
                       SizedBox(height: 24),
-                      _buildActionButton(
-                        context,
-                        'พูดคุยกับ AI',
-                        Color(0xFF9C27B0),
-                        Icons.smart_toy,
-                        () {
-                          // Navigate to AI Chat
-                        },
-                      ),
-                      SizedBox(height: 12),
+
+                      // ✅ ปุ่ม "ทำแบบทดสอบใหม่" → pop 1 ครั้ง กลับไป PHQ9TestScreen
                       _buildActionButton(
                         context,
                         'ทำแบบทดสอบใหม่',
                         Colors.grey.shade700,
                         Icons.refresh,
                         () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PHQ9TestScreen(),
-                            ),
-                          );
+                          Navigator.pop(context); // กลับไป PHQ9TestScreen
                         },
                       ),
                       SizedBox(height: 12),
+
+                      // ✅ ปุ่ม "กลับหน้าหลัก" → ไป HomeScreen แล้วล้าง stack ทั้งหมด
                       _buildActionButton(
                         context,
                         'กลับหน้าหลัก',
                         Colors.grey.shade500,
                         Icons.home,
                         () {
-                          Navigator.popUntil(context, (route) => route.isFirst);
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                            (route) => false, // ลบ stack ทั้งหมด
+                          );
                         },
                       ),
                     ],
@@ -246,6 +240,7 @@ class _PHQ9ResultScreenState extends State<PHQ9ResultScreen> {
     return '😢';
   }
 
+  // ✅ ลูกศรย้อนกลับ → pop 1 หน้า กลับไป PHQ9TestScreen
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -253,8 +248,7 @@ class _PHQ9ResultScreenState extends State<PHQ9ResultScreen> {
         children: [
           IconButton(
             icon: Icon(Icons.arrow_back, color: Color(0xFF6A1B9A)),
-            onPressed: () =>
-                Navigator.popUntil(context, (route) => route.isFirst),
+            onPressed: () => Navigator.pop(context), // กลับไป PHQ9TestScreen
           ),
         ],
       ),

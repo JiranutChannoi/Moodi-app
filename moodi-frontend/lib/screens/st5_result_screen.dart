@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'st5_test_screen.dart';
-import '../services/api_service.dart'; // ✅ ถูกต้อง
+import '../services/api_service.dart';
+import 'home_screen.dart'; // ✅ import HomeScreen
 
 class ST5ResultScreen extends StatefulWidget {
   final int score;
@@ -33,10 +33,9 @@ class _ST5ResultScreenState extends State<ST5ResultScreen> {
 
   Future<void> _saveResult() async {
     if (_saved) return;
-
     try {
       await ApiService.saveQuizResult(
-        userId: 1, // 🔴 TODO: ใส่ user_id จริงจากระบบ login
+        userId: 1,
         quizType: 'ST5',
         totalScore: widget.score,
         level: widget.level,
@@ -193,36 +192,33 @@ class _ST5ResultScreenState extends State<ST5ResultScreen> {
                         ),
                       ),
                       SizedBox(height: 24),
-                      _buildActionButton(
-                        context,
-                        'พูดคุยกับ AI',
-                        Color(0xFF00BCD4),
-                        Icons.smart_toy,
-                        () {},
-                      ),
-                      SizedBox(height: 12),
+
+                      // ✅ ปุ่ม "ทำแบบทดสอบใหม่" → pop 1 ครั้ง กลับไป ST5TestScreen
                       _buildActionButton(
                         context,
                         'ทำแบบทดสอบใหม่',
                         Colors.grey.shade700,
                         Icons.refresh,
                         () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ST5TestScreen(),
-                            ),
-                          );
+                          Navigator.pop(context); // กลับไป ST5TestScreen
                         },
                       ),
                       SizedBox(height: 12),
+
+                      // ✅ ปุ่ม "กลับหน้าหลัก" → ไป HomeScreen แล้วล้าง stack ทั้งหมด
                       _buildActionButton(
                         context,
                         'กลับหน้าหลัก',
                         Colors.grey.shade500,
                         Icons.home,
                         () {
-                          Navigator.popUntil(context, (route) => route.isFirst);
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                            (route) => false, // ล้าง stack ทั้งหมด
+                          );
                         },
                       ),
                     ],
@@ -243,6 +239,7 @@ class _ST5ResultScreenState extends State<ST5ResultScreen> {
     return '😰';
   }
 
+  // ✅ ลูกศรย้อนกลับ → pop 1 หน้า กลับไป ST5TestScreen
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -250,8 +247,7 @@ class _ST5ResultScreenState extends State<ST5ResultScreen> {
         children: [
           IconButton(
             icon: Icon(Icons.arrow_back, color: Color(0xFF00838F)),
-            onPressed: () =>
-                Navigator.popUntil(context, (route) => route.isFirst),
+            onPressed: () => Navigator.pop(context), // กลับไป ST5TestScreen
           ),
         ],
       ),
