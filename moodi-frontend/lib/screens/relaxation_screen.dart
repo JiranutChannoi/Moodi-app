@@ -108,8 +108,10 @@ class _RelaxationScreenState extends State<RelaxationScreen> {
 
   // ✅ แก้ stopTimer ให้หยุดเสียง
   void stopTimer() {
+    if (!isPlaying) return; // ✅ กันซ้ำ
+
     countdownTimer?.cancel();
-    _player.stop(); // ✅ เพิ่ม
+    _player.stop();
 
     setState(() {
       isPlaying = false;
