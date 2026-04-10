@@ -69,7 +69,7 @@ router.post("/login", async (req, res) => {
     );
 
     if (q.rows.length === 0) {
-      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+      return res.status(401).json({ error: "ไม่พบอีเมลนี้ในระบบ" }); // ✅ แก้
     }
 
     const user = q.rows[0];
@@ -77,7 +77,7 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
 
     if (!ok) {
-      return res.status(401).json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
+      return res.status(401).json({ error: "รหัสผ่านไม่ถูกต้อง" }); // ✅ แก้
     }
 
     res.json({
