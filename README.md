@@ -22,3 +22,35 @@ flutter run
 
 ## Backend
 Backend deployed on Railway
+
+## Screenshots
+
+### Authentication
+
+| Login | Home |
+|-------|------|
+| ![](images/login.png) | ![](images/home.png) |
+
+### Mood Tracking
+
+| Mood Tracking | Mood History |
+|---------------|-------------|
+| ![](images/mood_tracking.png) | ![](images/history_mood.png) |
+
+### Journaling
+
+| Journal | Journal History |
+|----------|----------------|
+| ![](images/journal.png) | ![](images/history_journal.png) |
+
+### Mental Health Support
+
+| AI Chatbot | Relaxing Sounds |
+|------------|----------------|
+| ![](images/chatbot.png) | ![](images/relaxsound.png) |
+
+### Assessment
+
+| Assessment | Results |
+|------------|---------|
+| ![](images/phq9_st5.png) | ![](images/result.png) |
